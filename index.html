@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Candy Bunch - Order & Archives Hub</title>
+  <!-- Remixicon -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Top Navigation Header -->
+    <header class="navbar">
+      <div class="nav-container">
+        <div class="brand">
+          <img src="/logo.png" alt="The Candy Bunch Logo" class="brand-logo-img">
+          <div>
+            <h1 class="brand-title">The Candy Bunch</h1>
+            <p class="brand-subtitle">Order & Daily Archives Management System</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+          <button id="tabSheetBtn" class="tab-btn active">
+            <i class="ri-table-line"></i> Daily Sheet
+          </button>
+          <button id="tabArchivesBtn" class="tab-btn">
+            <i class="ri-calendar-todo-line"></i> Day Archives
+          </button>
+        </nav>
+
+        <div class="nav-actions">
+          <button id="printBtn" class="btn btn-outline">
+            <i class="ri-printer-line"></i> Print Sheet
+          </button>
+          <button id="addOrderBtn" class="btn btn-primary">
+            <i class="ri-add-circle-line"></i> New Order
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- PAGE 1: DAILY ORDER SHEET VIEW -->
+      <div id="pageDailySheet" class="page-view">
+        <!-- Date Selector Header Banner -->
+        <section class="date-focus-banner">
+          <div class="date-focus-left">
+            <div class="date-icon"><i class="ri-calendar-event-fill"></i></div>
+            <div>
+              <span class="banner-subtext">Viewing Orders For:</span>
+              <h2 id="activeDateTitle" class="banner-date-heading">Saturday, July 25, 2026</h2>
+            </div>
+          </div>
+          <div class="date-focus-controls">
+            <button id="prevDayBtn" class="btn btn-subtle" title="Previous Day"><i class="ri-arrow-left-s-line"></i> Prev Day</button>
+            <input type="date" id="selectedDateInput" class="input-date-picker">
+            <button id="nextDayBtn" class="btn btn-subtle" title="Next Day">Next Day <i class="ri-arrow-right-s-line"></i></button>
+            <button id="todayBtn" class="btn btn-pink-subtle">Today</button>
+          </div>
+        </section>
+
+        <!-- Stats Grid for Active Date -->
+        <section class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon bg-pink-light">
+              <i class="ri-cake-2-fill color-pink"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Orders Today</span>
+              <h3 id="statTotalOrders" class="stat-value">0</h3>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon bg-purple-light">
+              <i class="ri-wallet-3-fill color-purple"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Paid via Whish</span>
+              <h3 id="statPaidWhish" class="stat-value">0</h3>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon bg-emerald-light">
+              <i class="ri-money-dollar-circle-fill color-emerald"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Paid via Cash</span>
+              <h3 id="statPaidCash" class="stat-value">0</h3>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon bg-orange-light">
+              <i class="ri-pie-chart-line color-orange"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Partial Paid</span>
+              <h3 id="statPartialPaid" class="stat-value">0</h3>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon bg-amber-light">
+              <i class="ri-error-warning-fill color-amber"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Not Paid / Blank</span>
+              <h3 id="statNotPaid" class="stat-value">0</h3>
+            </div>
+          </div>
+        </section>
+
+        <!-- Search & Filter Bar -->
+        <section class="filter-card">
+          <div class="search-box">
+            <i class="ri-search-line search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Search Cake #, Customer Name, Destination, Delivery Fee...">
+          </div>
+
+          <div class="filter-group">
+            <div class="filter-item">
+              <label for="filterPayment"><i class="ri-bank-card-line"></i> Payment:</label>
+              <select id="filterPayment" class="select-input">
+                <option value="ALL">All Payments</option>
+                <option value="Not Decided">Not Decided (Blank)</option>
+                <option value="Paid Whish">Paid Whish</option>
+                <option value="Paid Cash">Paid Cash</option>
+                <option value="Partial Paid">Partial Paid</option>
+                <option value="Not Paid">Not Paid</option>
+              </select>
+            </div>
+
+            <div class="filter-item">
+              <label for="filterPickup"><i class="ri-map-pin-line"></i> Type:</label>
+              <select id="filterPickup" class="select-input">
+                <option value="ALL">All Types</option>
+                <option value="YES">Pick Up</option>
+                <option value="NO">Delivery</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Order Table Card -->
+        <section class="table-container-card">
+          <div class="table-header-row">
+            <div>
+              <h3 class="table-title">Order Sheet for <span id="tableDateSubtitle">July 25, 2026</span></h3>
+              <p class="table-subtitle">Daily log sheet with Price, Delivery Fee & Payment tracking</p>
+            </div>
+            <div class="table-actions">
+              <button id="resetSampleDataBtn" class="btn-text">
+                <i class="ri-refresh-line"></i> Reload Sample Sheet
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="cake-table" id="cakeOrderTable">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">CAKE #</th>
+                  <th style="width: 110px;">DATE</th>
+                  <th>CUSTOMER NAME</th>
+                  <th style="width: 75px; text-align: center;">PICK UP</th>
+                  <th style="width: 85px;">TIME</th>
+                  <th style="width: 95px; background: #F8BBD0; color: #880E4F;">PRICE ($)</th>
+                  <th>DELIVERY DESTINATION & FEE</th>
+                  <th style="width: 75px; text-align: center;">TOPPER</th>
+                  <th>SPECIAL INSTRUCTIONS</th>
+                  <th style="width: 160px; text-align: center;">PAYMENT STATUS</th>
+                  <th style="width: 140px;">SIGNED BY</th>
+                  <th style="width: 85px; text-align: center;" class="no-print">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+            
+            <div id="emptyState" class="empty-state hidden">
+              <i class="ri-cake-3-line empty-icon"></i>
+              <h3>No Cake Orders Registered For This Day</h3>
+              <p>Click "New Order" above to add a cake order for this date.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- PAGE 2: DAY ARCHIVES & HISTORY VIEW -->
+      <div id="pageArchives" class="page-view hidden">
+        <section class="archive-header-card">
+          <div>
+            <h2><i class="ri-history-line"></i> Historical Daily Logs & Archives</h2>
+            <p>Access any past or future day's order log anytime — organized day by day.</p>
+          </div>
+          <div class="archive-jump-box">
+            <label for="archiveJumpDate">Jump to Any Date:</label>
+            <input type="date" id="archiveJumpDate" class="input-date-picker">
+          </div>
+        </section>
+
+        <section class="archives-grid" id="archivesGrid">
+          <!-- Dynamic Day Cards loaded here -->
+        </section>
+      </div>
+
+    </main>
+
+    <!-- Modal for Adding / Editing Orders -->
+    <div id="orderModal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <img src="/logo.png" class="modal-logo-img" alt="Logo">
+            <div>
+              <h2 id="modalHeading">New Cake Order</h2>
+              <p class="modal-subtext">The Candy Bunch - Order Form</p>
+            </div>
+          </div>
+          <button id="closeModalBtn" class="btn-close">&times;</button>
+        </div>
+
+        <form id="orderForm" class="modal-body">
+          <input type="hidden" id="editOrderId" value="">
+
+          <div class="form-row grid-2">
+            <div class="form-group">
+              <label for="inputCakeNo"><i class="ri-hashtag"></i> 1. Cake # <span class="required">*</span></label>
+              <input type="text" id="inputCakeNo" placeholder="e.g. 31" required class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label for="inputDate"><i class="ri-calendar-event-line"></i> 2. Date (Mini Calendar) <span class="required">*</span></label>
+              <input type="date" id="inputDate" required class="form-control">
+            </div>
+          </div>
+
+          <div class="form-row grid-2">
+            <div class="form-group">
+              <label for="inputCustomerName"><i class="ri-user-heart-line"></i> 3. Customer Name <span class="required">*</span></label>
+              <input type="text" id="inputCustomerName" placeholder="e.g. Cynthia Francis" required class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label for="inputPrice"><i class="ri-price-tag-3-line"></i> Price ($)</label>
+              <input type="text" id="inputPrice" placeholder="e.g. 50.00" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-row grid-2">
+            <div class="form-group">
+              <label for="inputTime"><i class="ri-time-line"></i> 5. Time (Mini Clock) <span class="required">*</span></label>
+              <input type="time" id="inputTime" required class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label><i class="ri-store-2-line"></i> 4. Pick Up?</label>
+              <div class="radio-pill-group">
+                <label class="radio-pill">
+                  <input type="radio" name="inputPickup" value="YES">
+                  <span class="pill-content"><i class="ri-check-line"></i> Yes</span>
+                </label>
+                <label class="radio-pill">
+                  <input type="radio" name="inputPickup" value="NO" checked>
+                  <span class="pill-content"><i class="ri-truck-line"></i> No (Delivery)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delivery Options Section (Destination & Manual Delivery Fee) -->
+          <div id="deliveryFieldsGroup" class="form-row grid-2">
+            <div class="form-group">
+              <label for="inputDestination"><i class="ri-map-pin-2-line"></i> 6. Delivery Destination</label>
+              <input type="text" id="inputDestination" placeholder="e.g. Sahel Alma, Keserwen" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label for="inputDeliveryFee"><i class="ri-truck-line"></i> Delivery Fee ($)</label>
+              <input type="text" id="inputDeliveryFee" placeholder="e.g. 5.00" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><i class="ri-vip-crown-line"></i> 7. Topper?</label>
+            <div class="radio-pill-group">
+              <label class="radio-pill">
+                <input type="radio" name="inputTopper" value="YES">
+                <span class="pill-content"><i class="ri-check-line"></i> Yes</span>
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="inputTopper" value="NO" checked>
+                <span class="pill-content"><i class="ri-close-line"></i> No</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputInstructions"><i class="ri-file-text-line"></i> 8. Special Instructions</label>
+            <textarea id="inputInstructions" rows="2" placeholder="e.g. 2 dz (éclair and tart)..." class="form-control"></textarea>
+          </div>
+
+          <div class="form-group highlight-payment-group">
+            <label><i class="ri-wallet-3-line"></i> 9. Payment Status</label>
+            <div class="radio-pill-group payment-pills flex-wrap">
+              <label class="radio-pill pill-blank">
+                <input type="radio" name="inputPayment" value="Not Decided" checked>
+                <span class="pill-content"><i class="ri-subtract-line"></i> Not Decided (Blank)</span>
+              </label>
+              <label class="radio-pill pill-whish">
+                <input type="radio" name="inputPayment" value="Paid Whish">
+                <span class="pill-content"><i class="ri-smartphone-line"></i> Paid Whish</span>
+              </label>
+              <label class="radio-pill pill-cash">
+                <input type="radio" name="inputPayment" value="Paid Cash">
+                <span class="pill-content"><i class="ri-money-dollar-circle-line"></i> Paid Cash</span>
+              </label>
+              <label class="radio-pill pill-partial">
+                <input type="radio" name="inputPayment" value="Partial Paid">
+                <span class="pill-content"><i class="ri-pie-chart-line"></i> Partial Paid</span>
+              </label>
+              <label class="radio-pill pill-unpaid">
+                <input type="radio" name="inputPayment" value="Not Paid">
+                <span class="pill-content"><i class="ri-time-line"></i> Not Paid</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Partial Paid Amount Input -->
+          <div id="partialAmountGroup" class="form-group partial-amount-box hidden">
+            <label for="inputPartialAmount"><i class="ri-money-dollar-box-line"></i> Partial Amount Paid So Far ($)</label>
+            <input type="text" id="inputPartialAmount" placeholder="e.g. 25.00" class="form-control">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" id="cancelModalBtn" class="btn btn-light">Cancel</button>
+            <button type="submit" class="btn btn-primary"><i class="ri-save-line"></i> Save Order</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Password Authorization Modal -->
+    <div id="authModal" class="modal-backdrop hidden">
+      <div class="modal-card modal-small">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-badge"><i class="ri-lock-password-fill"></i></div>
+            <div>
+              <h2>Authorization Required</h2>
+              <p class="modal-subtext">Enter user password to change payment status</p>
+            </div>
+          </div>
+          <button id="closeAuthModalBtn" class="btn-close">&times;</button>
+        </div>
+
+        <form id="authForm" class="modal-body">
+          <input type="hidden" id="targetOrderId" value="">
+
+          <div class="form-group">
+            <label><i class="ri-user-shared-line"></i> Select User Account <span class="required">*</span></label>
+            <div class="user-select-pills">
+              <label class="radio-pill">
+                <input type="radio" name="authUser" value="User 1" checked>
+                <span class="pill-content">User 1</span>
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="authUser" value="User 2">
+                <span class="pill-content">User 2</span>
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="authUser" value="User 3">
+                <span class="pill-content">User 3</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="authPassword"><i class="ri-key-2-line"></i> Password / PIN <span class="required">*</span></label>
+            <input type="password" id="authPassword" placeholder="Enter PIN (User 1: 1111, User 2: 2222, User 3: 3333)" required class="form-control">
+            <p id="authErrorMsg" class="error-msg hidden"><i class="ri-error-warning-line"></i> Incorrect password! Please try again.</p>
+          </div>
+
+          <div class="form-group">
+            <label><i class="ri-bank-card-line"></i> New Payment Status <span class="required">*</span></label>
+            <div class="radio-pill-group payment-pills flex-wrap">
+              <label class="radio-pill pill-blank">
+                <input type="radio" name="targetPayment" value="Not Decided">
+                <span class="pill-content">Not Decided (Blank)</span>
+              </label>
+              <label class="radio-pill pill-whish">
+                <input type="radio" name="targetPayment" value="Paid Whish">
+                <span class="pill-content">Paid Whish</span>
+              </label>
+              <label class="radio-pill pill-cash">
+                <input type="radio" name="targetPayment" value="Paid Cash">
+                <span class="pill-content">Paid Cash</span>
+              </label>
+              <label class="radio-pill pill-partial">
+                <input type="radio" name="targetPayment" value="Partial Paid">
+                <span class="pill-content">Partial Paid</span>
+              </label>
+              <label class="radio-pill pill-unpaid">
+                <input type="radio" name="targetPayment" value="Not Paid">
+                <span class="pill-content">Not Paid</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="authPartialAmountGroup" class="form-group partial-amount-box hidden">
+            <label for="authPartialAmount"><i class="ri-money-dollar-box-line"></i> Partial Amount Paid So Far ($)</label>
+            <input type="text" id="authPartialAmount" placeholder="e.g. 25.00" class="form-control">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" id="cancelAuthModalBtn" class="btn btn-light">Cancel</button>
+            <button type="submit" class="btn btn-primary"><i class="ri-check-double-line"></i> Authorize & Sign</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Printable Sheet Header -->
+    <div class="print-only-header hidden-screen">
+      <div class="print-header-content">
+        <img src="/logo.png" class="print-logo" alt="The Candy Bunch">
+        <div>
+          <h2>The Candy Bunch - Daily Order Log</h2>
+          <p id="printSheetDate">Date: July 25, 2026</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
