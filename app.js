@@ -1,5 +1,5 @@
 // ==========================================================================
-// The Candy Bunch - Full Mobile Optimization, Handout Checkboxes & Reschedule Portals
+// The Candy Bunch - Clean Paper Log Sheet Integration (Fresh Data Reset)
 // ==========================================================================
 
 const USERS = {
@@ -8,7 +8,8 @@ const USERS = {
   'User 3': '3333'
 };
 
-const INITIAL_SAMPLE_ORDERS = [
+// Exact 5 Orders from the Physical Paper Order Sheet
+const INITIAL_PAPER_ORDERS = [
   {
     id: '2026-07-25_111',
     cakeNo: '111',
@@ -16,15 +17,15 @@ const INITIAL_SAMPLE_ORDERS = [
     customerName: 'Cynthia Francis bechaalany',
     pickup: 'NO',
     time: '15:00',
-    price: '45.00',
+    price: '',
     destination: 'sahel alma',
-    deliveryFee: '5.00',
+    deliveryFee: '',
     topper: 'NO',
     instructions: '2 dz (éclair and tart)',
     paymentStatus: 'Not Decided',
     partialAmount: '',
-    signedBy: 'User 1',
-    signedAt: '2026-07-25 10:15 AM',
+    signedBy: '',
+    signedAt: '',
     leftStore: false,
     handedOutBy: '',
     handedOutAt: '',
@@ -38,18 +39,18 @@ const INITIAL_SAMPLE_ORDERS = [
     customerName: 'Carelle Khairallah',
     pickup: 'NO',
     time: '18:00',
-    price: '55.00',
+    price: '',
     destination: 'soul beit misk',
-    deliveryFee: '7.00',
+    deliveryFee: '',
     topper: 'NO',
     instructions: '',
-    paymentStatus: 'Paid Whish',
+    paymentStatus: 'Not Decided',
     partialAmount: '',
-    signedBy: 'User 2',
-    signedAt: '2026-07-25 11:30 AM',
-    leftStore: true,
-    handedOutBy: 'User 2',
-    handedOutAt: '2026-07-25 11:45 AM',
+    signedBy: '',
+    signedAt: '',
+    leftStore: false,
+    handedOutBy: '',
+    handedOutAt: '',
     rescheduledTo: '',
     rescheduledFrom: ''
   },
@@ -60,15 +61,15 @@ const INITIAL_SAMPLE_ORDERS = [
     customerName: 'Guya Tohme',
     pickup: 'NO',
     time: '09:00',
-    price: '40.00',
+    price: '',
     destination: 'Antoura keserwen',
-    deliveryFee: '6.00',
+    deliveryFee: '',
     topper: 'NO',
     instructions: '',
-    paymentStatus: 'Paid Cash',
+    paymentStatus: 'Not Decided',
     partialAmount: '',
-    signedBy: 'User 3',
-    signedAt: '2026-07-25 09:00 AM',
+    signedBy: '',
+    signedAt: '',
     leftStore: false,
     handedOutBy: '',
     handedOutAt: '',
@@ -82,15 +83,15 @@ const INITIAL_SAMPLE_ORDERS = [
     customerName: 'Sahar (micheline)',
     pickup: 'NO',
     time: '10:00',
-    price: '85.00',
+    price: '',
     destination: 'Micheline keserwany babel dbayeh',
-    deliveryFee: '10.00',
+    deliveryFee: '',
     topper: 'NO',
     instructions: 'and a fake cake, tower prof',
-    paymentStatus: 'Partial Paid',
-    partialAmount: '30.00',
-    signedBy: 'User 1',
-    signedAt: '2026-07-25 12:00 PM',
+    paymentStatus: 'Not Decided',
+    partialAmount: '',
+    signedBy: '',
+    signedAt: '',
     leftStore: false,
     handedOutBy: '',
     handedOutAt: '',
@@ -104,15 +105,15 @@ const INITIAL_SAMPLE_ORDERS = [
     customerName: 'Mir',
     pickup: 'NO',
     time: '10:00',
-    price: '50.00',
-    destination: 'Zouk Mosbeh',
-    deliveryFee: '5.00',
+    price: '',
+    destination: '',
+    deliveryFee: '',
     topper: 'NO',
     instructions: '',
-    paymentStatus: 'Paid Cash',
+    paymentStatus: 'Not Decided',
     partialAmount: '',
-    signedBy: 'User 2',
-    signedAt: '2026-07-25 01:45 PM',
+    signedBy: '',
+    signedAt: '',
     leftStore: false,
     handedOutBy: '',
     handedOutAt: '',
@@ -136,53 +137,32 @@ class CandyBunchApp {
   }
 
   loadOrders() {
-    let savedOrders = null;
-    // Check multiple storage keys for migration safety
-    const savedV6 = localStorage.getItem('candy_bunch_v6_orders');
-    const savedV5 = localStorage.getItem('candy_bunch_v5_orders');
-    const savedLegacy = localStorage.getItem('candy_bunch_orders');
+    // Force reset to clean paper sheet data for v7
+    const savedV7 = localStorage.getItem('candy_bunch_v7_orders');
 
-    const rawData = savedV6 || savedV5 || savedLegacy;
-
-    if (rawData) {
+    if (savedV7) {
       try {
-        savedOrders = JSON.parse(rawData);
+        const parsed = JSON.parse(savedV7);
+        if (Array.isArray(parsed) && parsed.length >= 0) {
+          return parsed;
+        }
       } catch (e) {
-        console.error('Error parsing stored orders:', e);
+        console.error('Error parsing stored v7 orders:', e);
       }
     }
 
-    if (!Array.isArray(savedOrders) || savedOrders.length === 0) {
-      return [...INITIAL_SAMPLE_ORDERS];
-    }
+    // Clear older cached data keys
+    localStorage.removeItem('candy_bunch_v6_orders');
+    localStorage.removeItem('candy_bunch_v5_orders');
+    localStorage.removeItem('candy_bunch_orders');
 
-    // Ensure all stored orders have default values for null-safety
-    return savedOrders.map(o => ({
-      id: o.id || `${o.date || '2026-07-25'}_${o.cakeNo || '0'}_${Math.random()}`,
-      cakeNo: o.cakeNo || '',
-      date: o.date || '2026-07-25',
-      customerName: o.customerName || '',
-      pickup: o.pickup || 'NO',
-      time: o.time || '10:00',
-      price: o.price || '',
-      destination: o.destination || '',
-      deliveryFee: o.deliveryFee || '',
-      topper: o.topper || 'NO',
-      instructions: o.instructions || '',
-      paymentStatus: o.paymentStatus || 'Not Decided',
-      partialAmount: o.partialAmount || '',
-      signedBy: o.signedBy || 'User 1',
-      signedAt: o.signedAt || '',
-      leftStore: !!o.leftStore,
-      handedOutBy: o.handedOutBy || '',
-      handedOutAt: o.handedOutAt || '',
-      rescheduledTo: o.rescheduledTo || '',
-      rescheduledFrom: o.rescheduledFrom || ''
-    }));
+    // Store clean fresh paper log sheet orders
+    localStorage.setItem('candy_bunch_v7_orders', JSON.stringify(INITIAL_PAPER_ORDERS));
+    return [...INITIAL_PAPER_ORDERS];
   }
 
   saveOrders() {
-    localStorage.setItem('candy_bunch_v6_orders', JSON.stringify(this.orders));
+    localStorage.setItem('candy_bunch_v7_orders', JSON.stringify(this.orders));
     this.render();
   }
 
@@ -313,8 +293,8 @@ class CandyBunchApp {
     });
 
     this.resetSampleDataBtn.addEventListener('click', () => {
-      if (confirm('Reload default sample cake orders?')) {
-        this.orders = [...INITIAL_SAMPLE_ORDERS];
+      if (confirm('Clear all custom edits and reset to clean paper log sheet data?')) {
+        this.orders = [...INITIAL_PAPER_ORDERS];
         this.saveOrders();
       }
     });
@@ -433,8 +413,8 @@ class CandyBunchApp {
       instructions: this.inputInstructions.value.trim(),
       paymentStatus: paymentVal,
       partialAmount: paymentVal === 'Partial Paid' ? this.inputPartialAmount.value.trim() : '',
-      signedBy: existingOrder ? (existingOrder.signedBy || 'User 1') : 'User 1',
-      signedAt: existingOrder ? (existingOrder.signedAt || this.getFormattedTimestamp()) : this.getFormattedTimestamp(),
+      signedBy: existingOrder ? (existingOrder.signedBy || '') : '',
+      signedAt: existingOrder ? (existingOrder.signedAt || '') : '',
       leftStore: existingOrder ? !!existingOrder.leftStore : false,
       handedOutBy: existingOrder ? (existingOrder.handedOutBy || '') : '',
       handedOutAt: existingOrder ? (existingOrder.handedOutAt || '') : '',
@@ -849,6 +829,8 @@ class CandyBunchApp {
             portalBadgeHtml = `<br><span class="portal-badge from" data-target="${order.rescheduledFrom}" title="Click to view original date sheet"><i class="ri-arrow-left-line"></i> Rescheduled from ${order.rescheduledFrom}</span>`;
           }
 
+          let signedByHtml = order.signedBy ? `<span class="signed-user"><i class="ri-shield-check-fill" style="color:#10B981;"></i> ${order.signedBy}</span><span class="signed-time">${order.signedAt || '—'}</span>` : '<span style="color:#aaa;">—</span>';
+
           let handoutCellHtml = `
             <div class="left-store-box">
               <input type="checkbox" class="left-store-checkbox" ${order.leftStore ? 'checked' : ''} title="Check when order leaves store">
@@ -876,8 +858,7 @@ class CandyBunchApp {
               </span>
             </td>
             <td>
-              <span class="signed-user"><i class="ri-shield-check-fill" style="color:#10B981;"></i> ${order.signedBy || 'User 1'}</span>
-              <span class="signed-time">${order.signedAt || '—'}</span>
+              ${signedByHtml}
             </td>
             <td style="text-align: center;">
               ${handoutCellHtml}
