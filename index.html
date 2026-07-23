@@ -33,10 +33,10 @@
 
         <div class="nav-actions">
           <button id="printBtn" class="btn btn-outline">
-            <i class="ri-printer-line"></i> Print Sheet
+            <i class="ri-printer-line"></i> <span class="hide-mobile">Print Sheet</span>
           </button>
           <button id="addOrderBtn" class="btn btn-primary">
-            <i class="ri-add-circle-line"></i> New Order
+            <i class="ri-add-circle-line"></i> <span class="hide-mobile">New Order</span>
           </button>
         </div>
       </div>
@@ -57,14 +57,14 @@
             </div>
           </div>
           <div class="date-focus-controls">
-            <button id="prevDayBtn" class="btn btn-subtle" title="Previous Day"><i class="ri-arrow-left-s-line"></i> Prev Day</button>
+            <button id="prevDayBtn" class="btn btn-subtle" title="Previous Day"><i class="ri-arrow-left-s-line"></i> <span class="hide-mobile">Prev</span></button>
             <input type="date" id="selectedDateInput" class="input-date-picker">
-            <button id="nextDayBtn" class="btn btn-subtle" title="Next Day">Next Day <i class="ri-arrow-right-s-line"></i></button>
+            <button id="nextDayBtn" class="btn btn-subtle" title="Next Day"><span class="hide-mobile">Next</span> <i class="ri-arrow-right-s-line"></i></button>
             <button id="todayBtn" class="btn btn-pink-subtle">Today</button>
           </div>
         </section>
 
-        <!-- Stats Grid for Active Date -->
+        <!-- Stats Grid for Active Date (Includes Orders Remaining Tracker) -->
         <section class="stats-grid">
           <div class="stat-card">
             <div class="stat-icon bg-pink-light">
@@ -73,6 +73,17 @@
             <div class="stat-info">
               <span class="stat-label">Orders Today</span>
               <h3 id="statTotalOrders" class="stat-value">0</h3>
+            </div>
+          </div>
+
+          <!-- NEW TRACKER CARD: Orders Remaining Today -->
+          <div class="stat-card stat-highlight-remaining">
+            <div class="stat-icon bg-dark-pink-light">
+              <i class="ri-time-fill color-dark-pink"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Orders Remaining</span>
+              <h3 id="statOrdersRemaining" class="stat-value">0</h3>
             </div>
           </div>
 
@@ -106,17 +117,6 @@
             </div>
           </div>
 
-          <div class="stat-card">
-            <div class="stat-icon bg-amber-light">
-              <i class="ri-error-warning-fill color-amber"></i>
-            </div>
-            <div class="stat-info">
-              <span class="stat-label">Not Paid / Blank</span>
-              <h3 id="statNotPaid" class="stat-value">0</h3>
-            </div>
-          </div>
-
-          <!-- NEW CARD: Total Delivery Fees Sum -->
           <div class="stat-card stat-highlight-delivery">
             <div class="stat-icon bg-blue-light">
               <i class="ri-truck-fill color-blue"></i>
@@ -132,7 +132,7 @@
         <section class="filter-card">
           <div class="search-box">
             <i class="ri-search-line search-icon"></i>
-            <input type="text" id="searchInput" placeholder="Search Cake #, Customer Name, Destination, Delivery Fee...">
+            <input type="text" id="searchInput" placeholder="Search Cake #, Customer Name, Destination, Price...">
           </div>
 
           <div class="filter-group">
@@ -159,12 +159,12 @@
           </div>
         </section>
 
-        <!-- Order Table Card -->
+        <!-- Order Table Card & Mobile Cards Container -->
         <section class="table-container-card">
           <div class="table-header-row">
             <div>
               <h3 class="table-title">Order Sheet for <span id="tableDateSubtitle">July 25, 2026</span></h3>
-              <p class="table-subtitle">Daily log sheet with Price, Delivery Fee & Payment tracking</p>
+              <p class="table-subtitle">Daily log sheet with Handout Signatures & Reschedule Portals</p>
             </div>
             <div class="table-actions">
               <button id="resetSampleDataBtn" class="btn-text">
@@ -173,22 +173,24 @@
             </div>
           </div>
 
+          <!-- Desktop Table View -->
           <div class="table-responsive">
             <table class="cake-table" id="cakeOrderTable">
               <thead>
                 <tr>
                   <th style="width: 70px;">CAKE #</th>
-                  <th style="width: 110px;">DATE</th>
+                  <th style="width: 100px;">DATE</th>
                   <th>CUSTOMER NAME</th>
                   <th style="width: 75px; text-align: center;">PICK UP</th>
                   <th style="width: 85px;">TIME</th>
-                  <th style="width: 95px; background: #F8BBD0; color: #880E4F;">PRICE ($)</th>
+                  <th style="width: 90px; background: #F8BBD0; color: #880E4F;">PRICE ($)</th>
                   <th>DELIVERY DESTINATION & FEE</th>
-                  <th style="width: 75px; text-align: center;">TOPPER</th>
+                  <th style="width: 70px; text-align: center;">TOPPER</th>
                   <th>SPECIAL INSTRUCTIONS</th>
-                  <th style="width: 160px; text-align: center;">PAYMENT STATUS</th>
-                  <th style="width: 140px;">SIGNED BY</th>
-                  <th style="width: 85px; text-align: center;" class="no-print">ACTIONS</th>
+                  <th style="width: 150px; text-align: center;">PAYMENT STATUS</th>
+                  <th style="width: 130px;">SIGNED BY</th>
+                  <th style="width: 120px; text-align: center; background: #1E293B; color: #FFF;">ORDER GONE?</th>
+                  <th style="width: 100px; text-align: center;" class="no-print">ACTIONS</th>
                 </tr>
               </thead>
               <tbody id="tableBody">
@@ -357,7 +359,7 @@
       </div>
     </div>
 
-    <!-- Password Authorization Modal -->
+    <!-- Password Authorization Modal (Payment Status) -->
     <div id="authModal" class="modal-backdrop hidden">
       <div class="modal-card modal-small">
         <div class="modal-header">
@@ -432,6 +434,95 @@
           <div class="modal-footer">
             <button type="button" id="cancelAuthModalBtn" class="btn btn-light">Cancel</button>
             <button type="submit" class="btn btn-primary"><i class="ri-check-double-line"></i> Authorize & Sign</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Handout Authorization Modal ("Order Left Store" Sign Off) -->
+    <div id="handoutModal" class="modal-backdrop hidden">
+      <div class="modal-card modal-small">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-badge dark-badge"><i class="ri-store-3-fill"></i></div>
+            <div>
+              <h2>Order Leaving Store</h2>
+              <p class="modal-subtext">Sign off on order departure & handout</p>
+            </div>
+          </div>
+          <button id="closeHandoutModalBtn" class="btn-close">&times;</button>
+        </div>
+
+        <form id="handoutForm" class="modal-body">
+          <input type="hidden" id="handoutOrderId" value="">
+
+          <div class="form-group">
+            <label><i class="ri-user-follow-line"></i> Who Handed Order Away? <span class="required">*</span></label>
+            <div class="user-select-pills">
+              <label class="radio-pill">
+                <input type="radio" name="handoutUser" value="User 1" checked>
+                <span class="pill-content">User 1</span>
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="handoutUser" value="User 2">
+                <span class="pill-content">User 2</span>
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="handoutUser" value="User 3">
+                <span class="pill-content">User 3</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="handoutPassword"><i class="ri-key-2-line"></i> Password / PIN <span class="required">*</span></label>
+            <input type="password" id="handoutPassword" placeholder="Enter PIN (User 1: 1111, User 2: 2222, User 3: 3333)" required class="form-control">
+            <p id="handoutErrorMsg" class="error-msg hidden"><i class="ri-error-warning-line"></i> Incorrect password! Please try again.</p>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" id="cancelHandoutModalBtn" class="btn btn-light">Cancel</button>
+            <button type="submit" class="btn btn-primary dark-btn"><i class="ri-check-line"></i> Sign Out Order</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Reschedule Order Modal -->
+    <div id="rescheduleModal" class="modal-backdrop hidden">
+      <div class="modal-card modal-small">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-badge purple-badge"><i class="ri-history-line"></i></div>
+            <div>
+              <h2>Reschedule Cake Order</h2>
+              <p class="modal-subtext">Move order & create date portal</p>
+            </div>
+          </div>
+          <button id="closeRescheduleModalBtn" class="btn-close">&times;</button>
+        </div>
+
+        <form id="rescheduleForm" class="modal-body">
+          <input type="hidden" id="rescheduleOrderId" value="">
+
+          <div class="form-group">
+            <label><i class="ri-calendar-line"></i> Current Order Date</label>
+            <input type="text" id="rescheduleCurrentDateDisplay" disabled class="form-control disabled-input">
+          </div>
+
+          <div class="form-group">
+            <label for="rescheduleNewDate"><i class="ri-calendar-check-line"></i> New Rescheduled Date <span class="required">*</span></label>
+            <input type="date" id="rescheduleNewDate" required class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="rescheduleReason"><i class="ri-chat-1-line"></i> Reason / Customer Notes</label>
+            <input type="text" id="rescheduleReason" placeholder="e.g. Customer requested date change" class="form-control">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" id="cancelRescheduleModalBtn" class="btn btn-light">Cancel</button>
+            <button type="submit" class="btn btn-primary"><i class="ri-arrow-go-forward-line"></i> Confirm & Portal</button>
           </div>
         </form>
       </div>

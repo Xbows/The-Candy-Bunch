@@ -1,5 +1,5 @@
 // ==========================================================================
-// The Candy Bunch - Daily Sheet with Total Delivery Fees Calculation
+// The Candy Bunch - Full Mobile Optimization, Handout Checkboxes & Reschedule Portals
 // ==========================================================================
 
 const USERS = {
@@ -24,7 +24,12 @@ const INITIAL_SAMPLE_ORDERS = [
     paymentStatus: 'Not Decided',
     partialAmount: '',
     signedBy: 'User 1',
-    signedAt: '2026-07-25 10:15 AM'
+    signedAt: '2026-07-25 10:15 AM',
+    leftStore: false,
+    handedOutBy: '',
+    handedOutAt: '',
+    rescheduledTo: '',
+    rescheduledFrom: ''
   },
   {
     id: '2026-07-25_116',
@@ -41,7 +46,12 @@ const INITIAL_SAMPLE_ORDERS = [
     paymentStatus: 'Paid Whish',
     partialAmount: '',
     signedBy: 'User 2',
-    signedAt: '2026-07-25 11:30 AM'
+    signedAt: '2026-07-25 11:30 AM',
+    leftStore: true, // Handed out sample
+    handedOutBy: 'User 2',
+    handedOutAt: '2026-07-25 11:45 AM',
+    rescheduledTo: '',
+    rescheduledFrom: ''
   },
   {
     id: '2026-07-25_117',
@@ -58,7 +68,12 @@ const INITIAL_SAMPLE_ORDERS = [
     paymentStatus: 'Paid Cash',
     partialAmount: '',
     signedBy: 'User 3',
-    signedAt: '2026-07-25 09:00 AM'
+    signedAt: '2026-07-25 09:00 AM',
+    leftStore: false,
+    handedOutBy: '',
+    handedOutAt: '',
+    rescheduledTo: '',
+    rescheduledFrom: ''
   },
   {
     id: '2026-07-25_130',
@@ -75,7 +90,12 @@ const INITIAL_SAMPLE_ORDERS = [
     paymentStatus: 'Partial Paid',
     partialAmount: '30.00',
     signedBy: 'User 1',
-    signedAt: '2026-07-25 12:00 PM'
+    signedAt: '2026-07-25 12:00 PM',
+    leftStore: false,
+    handedOutBy: '',
+    handedOutAt: '',
+    rescheduledTo: '',
+    rescheduledFrom: ''
   },
   {
     id: '2026-07-25_144',
@@ -92,7 +112,12 @@ const INITIAL_SAMPLE_ORDERS = [
     paymentStatus: 'Paid Cash',
     partialAmount: '',
     signedBy: 'User 2',
-    signedAt: '2026-07-25 01:45 PM'
+    signedAt: '2026-07-25 01:45 PM',
+    leftStore: false,
+    handedOutBy: '',
+    handedOutAt: '',
+    rescheduledTo: '',
+    rescheduledFrom: ''
   }
 ];
 
@@ -102,6 +127,8 @@ class CandyBunchApp {
     this.selectedDate = '2026-07-25';
     this.currentTab = 'dailySheet';
     this.pendingAuthOrderId = null;
+    this.pendingHandoutOrderId = null;
+    this.pendingRescheduleOrderId = null;
 
     this.initElements();
     this.bindEvents();
@@ -109,7 +136,7 @@ class CandyBunchApp {
   }
 
   loadOrders() {
-    const saved = localStorage.getItem('candy_bunch_v5_orders');
+    const saved = localStorage.getItem('candy_bunch_v6_orders');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -121,7 +148,7 @@ class CandyBunchApp {
   }
 
   saveOrders() {
-    localStorage.setItem('candy_bunch_v5_orders', JSON.stringify(this.orders));
+    localStorage.setItem('candy_bunch_v6_orders', JSON.stringify(this.orders));
     this.render();
   }
 
@@ -145,7 +172,7 @@ class CandyBunchApp {
     this.nextDayBtn = document.getElementById('nextDayBtn');
     this.todayBtn = document.getElementById('todayBtn');
 
-    // Order Modal & Form
+    // Main Order Modal & Form
     this.modal = document.getElementById('orderModal');
     this.orderForm = document.getElementById('orderForm');
     this.modalHeading = document.getElementById('modalHeading');
@@ -175,15 +202,33 @@ class CandyBunchApp {
     this.closeAuthModalBtn = document.getElementById('closeAuthModalBtn');
     this.cancelAuthModalBtn = document.getElementById('cancelAuthModalBtn');
 
+    // Handout Modal ("Order Left Store")
+    this.handoutModal = document.getElementById('handoutModal');
+    this.handoutForm = document.getElementById('handoutForm');
+    this.handoutPasswordInput = document.getElementById('handoutPassword');
+    this.handoutErrorMsg = document.getElementById('handoutErrorMsg');
+    this.closeHandoutModalBtn = document.getElementById('closeHandoutModalBtn');
+    this.cancelHandoutModalBtn = document.getElementById('cancelHandoutModalBtn');
+
+    // Reschedule Modal
+    this.rescheduleModal = document.getElementById('rescheduleModal');
+    this.rescheduleForm = document.getElementById('rescheduleForm');
+    this.rescheduleCurrentDateDisplay = document.getElementById('rescheduleCurrentDateDisplay');
+    this.rescheduleNewDateInput = document.getElementById('rescheduleNewDate');
+    this.rescheduleReasonInput = document.getElementById('rescheduleReason');
+    this.closeRescheduleModalBtn = document.getElementById('closeRescheduleModalBtn');
+    this.cancelRescheduleModalBtn = document.getElementById('cancelRescheduleModalBtn');
+
     // Filters & Search
     this.searchInput = document.getElementById('searchInput');
     this.filterPayment = document.getElementById('filterPayment');
     this.filterPickup = document.getElementById('filterPickup');
 
-    // Table & Stats
+    // Table & Stats Tracker
     this.tableBody = document.getElementById('tableBody');
     this.emptyState = document.getElementById('emptyState');
     this.statTotalOrders = document.getElementById('statTotalOrders');
+    this.statOrdersRemaining = document.getElementById('statOrdersRemaining');
     this.statPaidWhish = document.getElementById('statPaidWhish');
     this.statPaidCash = document.getElementById('statPaidCash');
     this.statPartialPaid = document.getElementById('statPartialPaid');
@@ -222,43 +267,34 @@ class CandyBunchApp {
       }
     });
 
-    // Toggle partial amount field visibility
-    const paymentRadios = this.orderForm.querySelectorAll('input[name="inputPayment"]');
-    paymentRadios.forEach(radio => {
-      radio.addEventListener('change', () => {
-        if (radio.value === 'Partial Paid') {
-          this.partialAmountGroup.classList.remove('hidden');
-        } else {
-          this.partialAmountGroup.classList.add('hidden');
-        }
-      });
-    });
-
-    const authPaymentRadios = this.authForm.querySelectorAll('input[name="targetPayment"]');
-    authPaymentRadios.forEach(radio => {
-      radio.addEventListener('change', () => {
-        if (radio.value === 'Partial Paid') {
-          this.authPartialAmountGroup.classList.remove('hidden');
-        } else {
-          this.authPartialAmountGroup.classList.add('hidden');
-        }
-      });
-    });
-
+    // Main Order Modal
     this.addOrderBtn.addEventListener('click', () => this.openOrderModal());
     this.closeModalBtn.addEventListener('click', () => this.closeOrderModal());
     this.cancelModalBtn.addEventListener('click', () => this.closeOrderModal());
     this.orderForm.addEventListener('submit', (e) => this.handleOrderFormSubmit(e));
 
+    // Payment Auth Modal
     this.closeAuthModalBtn.addEventListener('click', () => this.closeAuthModal());
     this.cancelAuthModalBtn.addEventListener('click', () => this.closeAuthModal());
     this.authForm.addEventListener('submit', (e) => this.handleAuthSubmit(e));
 
+    // Handout Modal ("Order Left Store")
+    this.closeHandoutModalBtn.addEventListener('click', () => this.closeHandoutModal());
+    this.cancelHandoutModalBtn.addEventListener('click', () => this.closeHandoutModal());
+    this.handoutForm.addEventListener('submit', (e) => this.handleHandoutSubmit(e));
+
+    // Reschedule Modal
+    this.closeRescheduleModalBtn.addEventListener('click', () => this.closeRescheduleModal());
+    this.cancelRescheduleModalBtn.addEventListener('click', () => this.closeRescheduleModal());
+    this.rescheduleForm.addEventListener('submit', (e) => this.handleRescheduleSubmit(e));
+
+    // Print
     this.printBtn.addEventListener('click', () => {
       this.printSheetDate.textContent = `Date: ${this.formatFullDate(this.selectedDate)}`;
       window.print();
     });
 
+    // Reset Sample Data
     this.resetSampleDataBtn.addEventListener('click', () => {
       if (confirm('Reload default sample cake orders?')) {
         this.orders = [...INITIAL_SAMPLE_ORDERS];
@@ -266,6 +302,7 @@ class CandyBunchApp {
       }
     });
 
+    // Filters
     this.searchInput.addEventListener('input', () => this.render());
     this.filterPayment.addEventListener('change', () => this.render());
     this.filterPickup.addEventListener('change', () => this.render());
@@ -381,7 +418,12 @@ class CandyBunchApp {
       paymentStatus: paymentVal,
       partialAmount: paymentVal === 'Partial Paid' ? this.inputPartialAmount.value.trim() : '',
       signedBy: existingOrder ? existingOrder.signedBy : 'User 1',
-      signedAt: existingOrder ? existingOrder.signedAt : this.getFormattedTimestamp()
+      signedAt: existingOrder ? existingOrder.signedAt : this.getFormattedTimestamp(),
+      leftStore: existingOrder ? existingOrder.leftStore : false,
+      handedOutBy: existingOrder ? existingOrder.handedOutBy : '',
+      handedOutAt: existingOrder ? existingOrder.handedOutAt : '',
+      rescheduledTo: existingOrder ? existingOrder.rescheduledTo : '',
+      rescheduledFrom: existingOrder ? existingOrder.rescheduledFrom : ''
     };
 
     if (editId) {
@@ -398,6 +440,7 @@ class CandyBunchApp {
     this.closeOrderModal();
   }
 
+  // --- PAYMENT AUTH MODAL ---
   openAuthModal(orderId, suggestedNextStatus = null, prefilledPartialAmount = '') {
     this.pendingAuthOrderId = orderId;
     this.authForm.reset();
@@ -461,10 +504,130 @@ class CandyBunchApp {
     this.closeAuthModal();
   }
 
+  // --- HANDOUT MODAL ("ORDER LEFT STORE") ---
+  toggleLeftStoreStatus(orderId) {
+    const order = this.orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    if (order.leftStore) {
+      // Uncheck / Undo Handout
+      if (confirm('Undo order departure status?')) {
+        order.leftStore = false;
+        order.handedOutBy = '';
+        order.handedOutAt = '';
+        this.saveOrders();
+      } else {
+        this.render();
+      }
+    } else {
+      // Require Handout User Signature & PIN
+      this.openHandoutModal(orderId);
+    }
+  }
+
+  openHandoutModal(orderId) {
+    this.pendingHandoutOrderId = orderId;
+    this.handoutForm.reset();
+    this.handoutErrorMsg.classList.add('hidden');
+    this.handoutModal.classList.remove('hidden');
+    this.handoutPasswordInput.focus();
+  }
+
+  closeHandoutModal() {
+    this.handoutModal.classList.add('hidden');
+    this.pendingHandoutOrderId = null;
+    this.render();
+  }
+
+  handleHandoutSubmit(e) {
+    e.preventDefault();
+
+    const selectedUser = this.handoutForm.querySelector('input[name="handoutUser"]:checked')?.value;
+    const enteredPassword = this.handoutPasswordInput.value.trim();
+
+    if (enteredPassword !== USERS[selectedUser]) {
+      this.handoutErrorMsg.classList.remove('hidden');
+      this.handoutPasswordInput.value = '';
+      this.handoutPasswordInput.focus();
+      return;
+    }
+
+    const order = this.orders.find(o => o.id === this.pendingHandoutOrderId);
+    if (order) {
+      order.leftStore = true;
+      order.handedOutBy = selectedUser;
+      order.handedOutAt = this.getFormattedTimeOnly();
+      this.saveOrders();
+    }
+
+    this.closeHandoutModal();
+  }
+
+  // --- RESCHEDULE MODAL & PORTAL SYSTEM ---
+  openRescheduleModal(orderId) {
+    const order = this.orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    this.pendingRescheduleOrderId = orderId;
+    this.rescheduleForm.reset();
+    this.rescheduleCurrentDateDisplay.value = this.formatFullDate(order.date);
+    this.rescheduleNewDateInput.value = '';
+
+    this.rescheduleModal.classList.remove('hidden');
+    this.rescheduleNewDateInput.focus();
+  }
+
+  closeRescheduleModal() {
+    this.rescheduleModal.classList.add('hidden');
+    this.pendingRescheduleOrderId = null;
+  }
+
+  handleRescheduleSubmit(e) {
+    e.preventDefault();
+
+    const newDate = this.rescheduleNewDateInput.value;
+    const reason = this.rescheduleReasonInput.value.trim();
+
+    const originalOrder = this.orders.find(o => o.id === this.pendingRescheduleOrderId);
+    if (!originalOrder) return;
+
+    const originalDate = originalOrder.date;
+
+    if (newDate === originalDate) {
+      alert('Please select a different date to reschedule to!');
+      return;
+    }
+
+    // Mark original order as rescheduled to newDate
+    originalOrder.rescheduledTo = newDate;
+
+    // Create a new order entry on the target rescheduled date
+    const newRescheduledOrder = {
+      ...originalOrder,
+      id: `${newDate}_${originalOrder.cakeNo}_rescheduled_${Date.now()}`,
+      date: newDate,
+      rescheduledFrom: originalDate,
+      rescheduledTo: '',
+      instructions: reason ? `${originalOrder.instructions ? originalOrder.instructions + ' | ' : ''}Rescheduled: ${reason}` : originalOrder.instructions,
+      leftStore: false,
+      handedOutBy: '',
+      handedOutAt: ''
+    };
+
+    this.orders.unshift(newRescheduledOrder);
+    this.saveOrders();
+    this.closeRescheduleModal();
+  }
+
   getFormattedTimestamp() {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     return `${now.toISOString().split('T')[0]} ${timeStr}`;
+  }
+
+  getFormattedTimeOnly() {
+    const now = new Date();
+    return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   }
 
   deleteOrder(id) {
@@ -522,12 +685,15 @@ class CandyBunchApp {
   updateStats() {
     const dateOrders = this.orders.filter(o => o.date === this.selectedDate);
     const total = dateOrders.length;
+
+    // Remaining orders tracker: count where leftStore is false and not rescheduled out
+    const remainingCount = dateOrders.filter(o => !o.leftStore && !o.rescheduledTo).length;
+
     const whish = dateOrders.filter(o => o.paymentStatus === 'Paid Whish').length;
     const cash = dateOrders.filter(o => o.paymentStatus === 'Paid Cash').length;
     const partial = dateOrders.filter(o => o.paymentStatus === 'Partial Paid').length;
     const unpaid = dateOrders.filter(o => o.paymentStatus === 'Not Paid' || o.paymentStatus === 'Not Decided').length;
 
-    // Calculate Total Delivery Fees Sum for the active date
     let totalDeliveryFeesSum = 0;
     dateOrders.forEach(o => {
       if (o.pickup === 'NO' && o.deliveryFee) {
@@ -537,6 +703,7 @@ class CandyBunchApp {
     });
 
     this.statTotalOrders.textContent = total;
+    this.statOrdersRemaining.textContent = `${remainingCount} Left`;
     this.statPaidWhish.textContent = whish;
     this.statPaidCash.textContent = cash;
     this.statPartialPaid.textContent = partial;
@@ -621,6 +788,10 @@ class CandyBunchApp {
       activeDateOrders.forEach(order => {
         const tr = document.createElement('tr');
 
+        if (order.leftStore) {
+          tr.className = 'row-left-store';
+        }
+
         let paymentClass = 'blank';
         let paymentIcon = 'ri-subtract-line';
         let paymentLabel = 'Not Decided';
@@ -654,10 +825,26 @@ class CandyBunchApp {
           destinationDisplay = `${order.destination || 'Delivery'} ${feeBadge}`;
         }
 
+        // Reschedule Portal Badges
+        let portalBadgeHtml = '';
+        if (order.rescheduledTo) {
+          portalBadgeHtml = `<br><span class="portal-badge to" data-target="${order.rescheduledTo}" title="Click to view destination date sheet"><i class="ri-arrow-right-line"></i> Rescheduled to ${order.rescheduledTo}</span>`;
+        } else if (order.rescheduledFrom) {
+          portalBadgeHtml = `<br><span class="portal-badge from" data-target="${order.rescheduledFrom}" title="Click to view original date sheet"><i class="ri-arrow-left-line"></i> Rescheduled from ${order.rescheduledFrom}</span>`;
+        }
+
+        // Handout Signature cell
+        let handoutCellHtml = `
+          <div class="left-store-box">
+            <input type="checkbox" class="left-store-checkbox" ${order.leftStore ? 'checked' : ''} title="Check when order leaves store">
+            ${order.leftStore ? `<span class="handout-signature-tag">by ${order.handedOutBy || 'Staff'} ${order.handedOutAt ? '@ ' + order.handedOutAt : ''}</span>` : ''}
+          </div>
+        `;
+
         tr.innerHTML = `
           <td><span class="cake-number">${order.cakeNo}</span></td>
           <td>${this.formatFullDate(order.date).split(',')[0]}, ${order.date}</td>
-          <td><strong>${order.customerName}</strong></td>
+          <td><strong>${order.customerName}</strong> ${portalBadgeHtml}</td>
           <td style="text-align: center;">
             ${order.pickup === 'YES' ? '<span class="badge-yes">Yes</span>' : '<span class="badge-no">No</span>'}
           </td>
@@ -677,8 +864,14 @@ class CandyBunchApp {
             <span class="signed-user"><i class="ri-shield-check-fill" style="color:#10B981;"></i> ${order.signedBy || 'User 1'}</span>
             <span class="signed-time">${order.signedAt || '—'}</span>
           </td>
+          <td style="text-align: center;">
+            ${handoutCellHtml}
+          </td>
           <td style="text-align: center;" class="no-print">
             <div class="action-btns">
+              <button class="btn-table-action reschedule" title="Reschedule Order">
+                <i class="ri-history-line"></i>
+              </button>
               <button class="btn-table-action edit" title="Edit Order">
                 <i class="ri-edit-line"></i>
               </button>
@@ -689,7 +882,26 @@ class CandyBunchApp {
           </td>
         `;
 
+        // Bind portal badge click events
+        const portalBtn = tr.querySelector('.portal-badge');
+        if (portalBtn) {
+          portalBtn.addEventListener('click', () => {
+            const targetDate = portalBtn.getAttribute('data-target');
+            if (targetDate) {
+              this.selectedDate = targetDate;
+              this.selectedDateInput.value = targetDate;
+              this.render();
+            }
+          });
+        }
+
+        // Left store checkbox event
+        const leftStoreChk = tr.querySelector('.left-store-checkbox');
+        leftStoreChk.addEventListener('change', () => this.toggleLeftStoreStatus(order.id));
+
+        // Action Buttons
         tr.querySelector('.payment-badge').addEventListener('click', () => this.openAuthModal(order.id));
+        tr.querySelector('.btn-table-action.reschedule').addEventListener('click', () => this.openRescheduleModal(order.id));
         tr.querySelector('.btn-table-action.edit').addEventListener('click', () => this.openOrderModal(order));
         tr.querySelector('.btn-table-action.delete').addEventListener('click', () => this.deleteOrder(order.id));
 
