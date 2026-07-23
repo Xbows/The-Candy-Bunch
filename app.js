@@ -1,5 +1,5 @@
 // ==========================================================================
-// The Candy Bunch - Clean Paper Log Sheet Integration (Fixed Null Reference)
+// The Candy Bunch - Month Folders & Fixed Open Day Sheet Redirection
 // ==========================================================================
 
 const USERS = {
@@ -137,7 +137,6 @@ class CandyBunchApp {
   }
 
   loadOrders() {
-    // Purge old local storage versions
     localStorage.removeItem('candy_bunch_orders');
     localStorage.removeItem('candy_bunch_v5_orders');
     localStorage.removeItem('candy_bunch_v6_orders');
@@ -310,6 +309,11 @@ class CandyBunchApp {
       this.tabArchivesBtn.classList.remove('active');
       this.pageDailySheet.classList.remove('hidden');
       this.pageArchives.classList.add('hidden');
+
+      if (this.selectedDateInput) {
+        this.selectedDateInput.value = this.selectedDate;
+      }
+      this.render();
     } else {
       this.tabArchivesBtn.classList.add('active');
       this.tabSheetBtn.classList.remove('active');
@@ -635,6 +639,17 @@ class CandyBunchApp {
     }
   }
 
+  formatMonthYearHeader(yearMonthKey) {
+    // yearMonthKey: e.g. "2026-07"
+    try {
+      const [year, month] = yearMonthKey.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, 1);
+      return dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    } catch {
+      return yearMonthKey;
+    }
+  }
+
   formatTime12Hr(time24) {
     if (!time24) return '';
     const [hours, minutes] = (time24 || '').split(':');
@@ -703,9 +718,13 @@ class CandyBunchApp {
     if (this.statTotalDeliveryFees) this.statTotalDeliveryFees.textContent = `$${totalDeliveryFeesSum.toFixed(2)}`;
   }
 
+  // --- MONTH-BY-MONTH FOLDER ARCHIVES ---
   renderArchives() {
-    const dateMap = {};
+    if (!this.archivesGrid) return;
+    this.archivesGrid.innerHTML = '';
 
+    // First group days by date
+    const dateMap = {};
     this.orders.forEach(order => {
       if (!dateMap[order.date]) {
         dateMap[order.date] = { date: order.date, total: 0, whish: 0, cash: 0, partial: 0, unpaid: 0, deliveryFees: 0 };
@@ -724,44 +743,100 @@ class CandyBunchApp {
 
     const sortedDates = Object.values(dateMap).sort((a, b) => b.date.localeCompare(a.date));
 
-    if (!this.archivesGrid) return;
-    this.archivesGrid.innerHTML = '';
-
     if (sortedDates.length === 0) {
       this.archivesGrid.innerHTML = `<p class="text-muted">No historical day logs recorded yet.</p>`;
       return;
     }
 
-    sortedDates.forEach(day => {
-      const card = document.createElement('div');
-      card.className = 'archive-card';
-      card.innerHTML = `
-        <div>
-          <h3 class="archive-date-title">${this.formatFullDate(day.date)}</h3>
-          <div class="archive-stats-summary">
-            <span class="archive-stat-tag"><strong>${day.total}</strong> Orders</span>
-            <span class="archive-stat-tag" style="color: #2563EB;">Delivery Fees: <strong>$${day.deliveryFees.toFixed(2)}</strong></span>
-            <span class="archive-stat-tag" style="color: #6B21A8;">Whish: ${day.whish}</span>
-            <span class="archive-stat-tag" style="color: #137333;">Cash: ${day.cash}</span>
-            <span class="archive-stat-tag" style="color: #92400E;">Partial: ${day.partial}</span>
-            <span class="archive-stat-tag" style="color: #C5221F;">Unpaid/Blank: ${day.unpaid}</span>
+    // Now group sorted dates by Month & Year ("YYYY-MM")
+    const monthMap = {};
+    sortedDates.forEach(dayInfo => {
+      const monthKey = dayInfo.date.substring(0, 7); // "YYYY-MM"
+      if (!monthMap[monthKey]) {
+        monthMap[monthKey] = { monthKey: monthKey, days: [], totalOrders: 0 };
+      }
+      monthMap[monthKey].days.push(dayInfo);
+      monthMap[monthKey].totalOrders += dayInfo.total;
+    });
+
+    const sortedMonths = Object.keys(monthMap).sort().reverse();
+
+    const monthContainer = document.createElement('div');
+    monthContainer.className = 'month-folders-container';
+
+    sortedMonths.forEach((monthKey, idx) => {
+      const monthData = monthMap[monthKey];
+      const monthTitleStr = this.formatMonthYearHeader(monthKey);
+
+      const folderCard = document.createElement('div');
+      // Expand the most recent month folder by default
+      folderCard.className = `month-folder-card ${idx === 0 ? 'open' : ''}`;
+
+      folderCard.innerHTML = `
+        <div class="month-folder-header">
+          <div class="month-folder-title">
+            <i class="ri-folder-3-fill month-folder-icon"></i>
+            <div>
+              <h3>${monthTitleStr}</h3>
+            </div>
+          </div>
+          <div class="month-summary-badges">
+            <span class="month-badge"><i class="ri-calendar-event-line"></i> ${monthData.days.length} Days</span>
+            <span class="month-badge"><i class="ri-cake-2-line"></i> ${monthData.totalOrders} Orders</span>
+            <i class="ri-arrow-down-s-line toggle-chevron"></i>
           </div>
         </div>
-        <div class="archive-actions">
-          <button class="btn btn-pink-subtle open-day-btn" data-date="${day.date}">
-            <i class="ri-folder-open-line"></i> Open Day Sheet
-          </button>
-        </div>
+        <div class="month-days-grid ${idx === 0 ? '' : 'hidden'}"></div>
       `;
 
-      card.querySelector('.open-day-btn').addEventListener('click', () => {
-        this.selectedDate = day.date;
-        this.selectedDateInput.value = day.date;
-        this.switchTab('dailySheet');
+      const headerEl = folderCard.querySelector('.month-folder-header');
+      const daysGridEl = folderCard.querySelector('.month-days-grid');
+
+      headerEl.addEventListener('click', () => {
+        const isOpen = folderCard.classList.toggle('open');
+        if (isOpen) {
+          daysGridEl.classList.remove('hidden');
+        } else {
+          daysGridEl.classList.add('hidden');
+        }
       });
 
-      this.archivesGrid.appendChild(card);
+      // Populate day cards inside this month folder
+      monthData.days.forEach(day => {
+        const dayCard = document.createElement('div');
+        dayCard.className = 'archive-card';
+        dayCard.innerHTML = `
+          <div>
+            <h4 class="archive-date-title">${this.formatFullDate(day.date)}</h4>
+            <div class="archive-stats-summary">
+              <span class="archive-stat-tag"><strong>${day.total}</strong> Orders</span>
+              <span class="archive-stat-tag" style="color: #2563EB;">Fees: <strong>$${day.deliveryFees.toFixed(2)}</strong></span>
+              <span class="archive-stat-tag" style="color: #6B21A8;">Whish: ${day.whish}</span>
+              <span class="archive-stat-tag" style="color: #137333;">Cash: ${day.cash}</span>
+              <span class="archive-stat-tag" style="color: #92400E;">Partial: ${day.partial}</span>
+              <span class="archive-stat-tag" style="color: #C5221F;">Unpaid/Blank: ${day.unpaid}</span>
+            </div>
+          </div>
+          <div class="archive-actions">
+            <button class="btn btn-pink-subtle open-day-btn">
+              <i class="ri-folder-open-line"></i> Open Day Sheet
+            </button>
+          </div>
+        `;
+
+        dayCard.querySelector('.open-day-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.selectedDate = day.date;
+          this.switchTab('dailySheet');
+        });
+
+        daysGridEl.appendChild(dayCard);
+      });
+
+      monthContainer.appendChild(folderCard);
     });
+
+    this.archivesGrid.appendChild(monthContainer);
   }
 
   render() {
@@ -882,8 +957,7 @@ class CandyBunchApp {
               const targetDate = portalBtn.getAttribute('data-target');
               if (targetDate) {
                 this.selectedDate = targetDate;
-                this.selectedDateInput.value = targetDate;
-                this.render();
+                this.switchTab('dailySheet');
               }
             });
           }

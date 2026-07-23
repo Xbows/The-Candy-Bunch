@@ -1,5 +1,5 @@
 /* ==========================================================================
-   The Candy Bunch - Full Mobile Optimization, Handout Checkboxes & Reschedule Portals
+   The Candy Bunch - Month Folders Archives & Seamless Date Navigation
    ========================================================================== */
 
 :root {
@@ -184,10 +184,6 @@ h1, h2, h3, h4, th, .brand-title {
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.3);
 }
 
-.btn-primary.dark-btn:hover {
-  background: #1E293B;
-}
-
 .btn-outline {
   background: #FFF;
   color: #D81B60;
@@ -215,6 +211,11 @@ h1, h2, h3, h4, th, .brand-title {
   font-size: 0.82rem;
   font-weight: 700;
   border-radius: var(--radius-pill);
+}
+
+.btn-pink-subtle:hover {
+  background: var(--primary-pink);
+  color: #FFF;
 }
 
 .btn-light {
@@ -341,22 +342,16 @@ h1, h2, h3, h4, th, .brand-title {
 
 .bg-pink-light { background: #FCE4EC; }
 .color-pink { color: #D81B60; }
-
 .bg-dark-pink-light { background: #FCE4EC; }
 .color-dark-pink { color: #880E4F; }
-
 .bg-purple-light { background: #F3E8FF; }
 .color-purple { color: #8B5CF6; }
-
 .bg-emerald-light { background: #E6F4EA; }
 .color-emerald { color: #10B981; }
-
 .bg-orange-light { background: #FEF3C7; }
 .color-orange { color: #D97706; }
-
 .bg-amber-light { background: #FFFBEB; }
 .color-amber { color: #F59E0B; }
-
 .bg-blue-light { background: #EFF6FF; }
 .color-blue { color: #2563EB; }
 
@@ -503,7 +498,6 @@ h1, h2, h3, h4, th, .brand-title {
   background-color: #FFF5F8;
 }
 
-/* ORDER LEFT STORE / THICK BLACK STRIKEYTHROUGH LINE STYLING */
 .row-left-store {
   border-left: 6px solid #000000 !important;
   background-color: #F1F5F9 !important;
@@ -522,13 +516,6 @@ h1, h2, h3, h4, th, .brand-title {
   text-decoration: none !important;
 }
 
-.row-left-store .payment-badge,
-.row-left-store .action-btns,
-.row-left-store .left-store-box {
-  text-decoration: none !important;
-}
-
-/* Left Store Checkbox Control */
 .left-store-box {
   display: inline-flex;
   flex-direction: column;
@@ -553,7 +540,6 @@ h1, h2, h3, h4, th, .brand-title {
   display: block;
 }
 
-/* Reschedule Portal Badges & Links */
 .portal-badge {
   display: inline-flex;
   align-items: center;
@@ -566,21 +552,8 @@ h1, h2, h3, h4, th, .brand-title {
   transition: var(--transition);
 }
 
-.portal-badge.to {
-  background: #FDF2F8;
-  color: #BE185D;
-  border: 1px solid #FBCFE8;
-}
-
-.portal-badge.from {
-  background: #EEF2FF;
-  color: #4338CA;
-  border: 1px solid #C7D2FE;
-}
-
-.portal-badge:hover {
-  transform: scale(1.04);
-}
+.portal-badge.to { background: #FDF2F8; color: #BE185D; border: 1px solid #FBCFE8; }
+.portal-badge.from { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; }
 
 .cake-number {
   font-weight: 700;
@@ -614,23 +587,8 @@ h1, h2, h3, h4, th, .brand-title {
   border-radius: var(--radius-pill);
 }
 
-.badge-yes {
-  background: #DCFCE7;
-  color: #14532D;
-  font-weight: 700;
-  font-size: 0.72rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: var(--radius-pill);
-}
-
-.badge-no {
-  background: #F1F5F9;
-  color: #64748B;
-  font-weight: 700;
-  font-size: 0.72rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: var(--radius-pill);
-}
+.badge-yes { background: #DCFCE7; color: #14532D; font-weight: 700; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: var(--radius-pill); }
+.badge-no { background: #F1F5F9; color: #64748B; font-weight: 700; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: var(--radius-pill); }
 
 .payment-badge {
   display: inline-flex;
@@ -650,32 +608,13 @@ h1, h2, h3, h4, th, .brand-title {
 .payment-badge.partial { background: var(--badge-partial-bg); color: var(--badge-partial-text); border: 1.5px solid #F59E0B; }
 .payment-badge.unpaid { background: var(--badge-unpaid-bg); color: var(--badge-unpaid-text); border: 1px solid #FCA5A5; }
 
-.signed-user {
-  font-weight: 700;
-  font-size: 0.8rem;
-  color: #334155;
-}
+.signed-user { font-weight: 700; font-size: 0.8rem; color: #334155; }
+.signed-time { font-size: 0.7rem; color: #94A3B8; display: block; }
 
-.signed-time {
-  font-size: 0.7rem;
-  color: #94A3B8;
-  display: block;
-}
+/* ==========================================================================
+   MONTH FOLDERS & ACCORDION ARCHIVES STYLING
+   ========================================================================== */
 
-.partial-amount-box {
-  background: #FEF3C7;
-  border: 1.5px dashed #F59E0B;
-  padding: 0.75rem 0.9rem;
-  border-radius: var(--radius-md);
-  margin-top: 0.25rem;
-}
-
-.disabled-input {
-  background: #F1F5F9 !important;
-  color: #64748B !important;
-}
-
-/* Archives Grid & Cards */
 .archive-header-card {
   background: #FFF;
   border: 1px solid var(--border-light);
@@ -696,10 +635,84 @@ h1, h2, h3, h4, th, .brand-title {
   font-weight: 700;
 }
 
-.archives-grid {
+.month-folders-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.month-folder-card {
+  background: #FFF;
+  border: 1.5px solid var(--border-pink);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.month-folder-header {
+  padding: 1.1rem 1.35rem;
+  background: #FAF5F7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition);
+}
+
+.month-folder-header:hover {
+  background: var(--primary-pink-light);
+}
+
+.month-folder-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.month-folder-title h3 {
+  font-size: 1.2rem;
+  color: #880E4F;
+}
+
+.month-folder-icon {
+  font-size: 1.5rem;
+  color: var(--primary-pink);
+}
+
+.month-summary-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.month-badge {
+  background: #FFF;
+  border: 1px solid var(--border-pink);
+  color: #880E4F;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+}
+
+.toggle-chevron {
+  font-size: 1.4rem;
+  color: var(--primary-pink);
+  transition: transform 0.2s ease;
+}
+
+.month-folder-card.open .toggle-chevron {
+  transform: rotate(180deg);
+}
+
+.month-days-grid {
+  padding: 1.25rem;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
+  border-top: 1px solid var(--border-light);
+  background: #FFF;
 }
 
 .archive-card {
@@ -714,6 +727,11 @@ h1, h2, h3, h4, th, .brand-title {
   justify-content: space-between;
   gap: 0.85rem;
   transition: var(--transition);
+}
+
+.archive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .archive-date-title {
@@ -762,9 +780,7 @@ h1, h2, h3, h4, th, .brand-title {
   box-shadow: var(--shadow-modal);
 }
 
-.modal-card.modal-small {
-  max-width: 450px;
-}
+.modal-card.modal-small { max-width: 450px; }
 
 .modal-header {
   padding: 1rem 1.25rem;
@@ -781,20 +797,9 @@ h1, h2, h3, h4, th, .brand-title {
   gap: 0.65rem;
 }
 
-.modal-logo-img {
-  height: 34px;
-  mix-blend-mode: multiply;
-}
-
-.modal-badge.dark-badge {
-  background: #0F172A;
-  color: #FFF;
-}
-
-.modal-badge.purple-badge {
-  background: #F3E8FF;
-  color: #6B21A8;
-}
+.modal-logo-img { height: 34px; mix-blend-mode: multiply; }
+.modal-badge.dark-badge { background: #0F172A; color: #FFF; }
+.modal-badge.purple-badge { background: #F3E8FF; color: #6B21A8; }
 
 .btn-close {
   background: none;
@@ -916,116 +921,35 @@ h1, h2, h3, h4, th, .brand-title {
 
 .hidden { display: none !important; }
 
-/* ==========================================================================
-   MOBILE RESPONSIVENESS & ACCESSIBILITY (< 768px)
-   ========================================================================== */
-
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .nav-container {
-    padding: 0.65rem 1rem;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-  
-  .brand-logo-img {
-    height: 40px;
-  }
-  
-  .brand-title {
-    font-size: 1.15rem;
-  }
-  
-  .hide-mobile {
-    display: none;
-  }
-  
-  .nav-tabs {
-    width: 100%;
-    justify-content: center;
-    order: 3;
-  }
-  
-  .tab-btn {
-    flex: 1;
-    justify-content: center;
-  }
-  
-  .main-content {
-    padding: 0 0.85rem;
-    margin: 1rem auto;
-  }
-  
-  .grid-2 {
-    grid-template-columns: 1fr;
-  }
-  
-  .date-focus-banner {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 0.85rem 1rem;
-  }
-  
-  .date-focus-controls {
-    justify-content: space-between;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.65rem;
-  }
-  
-  .stat-card {
-    padding: 0.75rem 0.85rem;
-    gap: 0.6rem;
-  }
-  
-  .stat-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 1.1rem;
-  }
-  
-  .stat-value {
-    font-size: 1.15rem;
-  }
-  
-  .filter-card {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .filter-group {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  /* Make table easily swipeable on mobile */
-  .table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .cake-table {
-    min-width: 900px;
-  }
+  .nav-container { padding: 0.65rem 1rem; flex-wrap: wrap; gap: 0.75rem; }
+  .brand-logo-img { height: 40px; }
+  .brand-title { font-size: 1.15rem; }
+  .hide-mobile { display: none; }
+  .nav-tabs { width: 100%; justify-content: center; order: 3; }
+  .tab-btn { flex: 1; justify-content: center; }
+  .main-content { padding: 0 0.85rem; margin: 1rem auto; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .date-focus-banner { flex-direction: column; align-items: stretch; padding: 0.85rem 1rem; }
+  .date-focus-controls { justify-content: space-between; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
+  .stat-card { padding: 0.75rem 0.85rem; gap: 0.6rem; }
+  .stat-icon { width: 36px; height: 36px; font-size: 1.1rem; }
+  .stat-value { font-size: 1.15rem; }
+  .filter-card { flex-direction: column; align-items: stretch; }
+  .filter-group { flex-direction: column; gap: 0.5rem; }
+  .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cake-table { min-width: 900px; }
 }
 
 /* Print Mode */
 @media print {
   body { background: #FFF !important; }
-  .navbar, .date-focus-banner, .stats-grid, .filter-card, .no-print, .modal-backdrop, .btn, .table-actions, .nav-tabs {
-    display: none !important;
-  }
+  .navbar, .date-focus-banner, .stats-grid, .filter-card, .no-print, .modal-backdrop, .btn, .table-actions, .nav-tabs { display: none !important; }
   .main-content { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
   .table-container-card { border: none !important; box-shadow: none !important; }
-  .print-only-header {
-    display: flex !important;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #000;
-  }
+  .print-only-header { display: flex !important; align-items: center; gap: 1rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #000; }
   .print-logo { height: 50px; mix-blend-mode: multiply; }
   .cake-table th, .cake-table td { border: 1px solid #000 !important; }
 }
