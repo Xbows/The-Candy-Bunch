@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Candy Bunch - Order & Archives Hub</title>
+  <title>The Candy Bunch - Order & Monthly Archives Hub</title>
   <!-- Remixicon -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
   <link rel="stylesheet" href="/style.css">
@@ -17,7 +17,7 @@
           <img src="/logo.png" alt="The Candy Bunch Logo" class="brand-logo-img">
           <div>
             <h1 class="brand-title">The Candy Bunch</h1>
-            <p class="brand-subtitle">Order & Daily Archives Management System</p>
+            <p class="brand-subtitle">Order & Monthly Archives Management System</p>
           </div>
         </div>
 
@@ -27,7 +27,7 @@
             <i class="ri-table-line"></i> Daily Sheet
           </button>
           <button id="tabArchivesBtn" class="tab-btn">
-            <i class="ri-calendar-todo-line"></i> Day Archives
+            <i class="ri-calendar-todo-line"></i> Monthly Archives
           </button>
         </nav>
 
@@ -64,7 +64,7 @@
           </div>
         </section>
 
-        <!-- Stats Grid for Active Date (Includes Orders Remaining Tracker) -->
+        <!-- Stats Grid for Active Date -->
         <section class="stats-grid">
           <div class="stat-card">
             <div class="stat-icon bg-pink-light">
@@ -76,7 +76,6 @@
             </div>
           </div>
 
-          <!-- NEW TRACKER CARD: Orders Remaining Today -->
           <div class="stat-card stat-highlight-remaining">
             <div class="stat-icon bg-dark-pink-light">
               <i class="ri-time-fill color-dark-pink"></i>
@@ -159,7 +158,7 @@
           </div>
         </section>
 
-        <!-- Order Table Card & Mobile Cards Container -->
+        <!-- Order Table Card -->
         <section class="table-container-card">
           <div class="table-header-row">
             <div>
@@ -173,7 +172,6 @@
             </div>
           </div>
 
-          <!-- Desktop Table View -->
           <div class="table-responsive">
             <table class="cake-table" id="cakeOrderTable">
               <thead>
@@ -207,12 +205,12 @@
         </section>
       </div>
 
-      <!-- PAGE 2: DAY ARCHIVES & HISTORY VIEW -->
+      <!-- PAGE 2: MONTHLY ARCHIVES VIEW -->
       <div id="pageArchives" class="page-view hidden">
         <section class="archive-header-card">
           <div>
-            <h2><i class="ri-history-line"></i> Historical Daily Logs & Archives</h2>
-            <p>Access any past or future day's order log anytime — organized day by day.</p>
+            <h2><i class="ri-history-line"></i> Monthly Archives & Historical Logs</h2>
+            <p>Access any past or future month's order sheets organized in monthly folders.</p>
           </div>
           <div class="archive-jump-box">
             <label for="archiveJumpDate">Jump to Any Date:</label>
@@ -221,7 +219,7 @@
         </section>
 
         <section class="archives-grid" id="archivesGrid">
-          <!-- Dynamic Day Cards loaded here -->
+          <!-- Dynamic Month Folder Cards loaded here -->
         </section>
       </div>
 
@@ -439,7 +437,7 @@
       </div>
     </div>
 
-    <!-- Handout Authorization Modal ("Order Left Store" Sign Off) -->
+    <!-- Handout Authorization Modal ("Order Left Store") -->
     <div id="handoutModal" class="modal-backdrop hidden">
       <div class="modal-card modal-small">
         <div class="modal-header">
