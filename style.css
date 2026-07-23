@@ -1,5 +1,5 @@
 /* ==========================================================================
-   The Candy Bunch - Styling with Total Delivery Fees Metric Summary Card
+   The Candy Bunch - Styling with Seamless Transparent Blend Logo
    ========================================================================== */
 
 :root {
@@ -86,11 +86,18 @@ h1, h2, h3, h4, th, .brand-title {
   gap: 0.85rem;
 }
 
+/* Seamless Transparent Logo Styling */
 .brand-logo-img {
   height: 52px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 3px 6px rgba(216, 27, 96, 0.15));
+  mix-blend-mode: multiply;
+  filter: contrast(1.05);
+  transition: transform 0.2s ease;
+}
+
+.brand-logo-img:hover {
+  transform: scale(1.06);
 }
 
 .brand-title {
@@ -711,6 +718,8 @@ h1, h2, h3, h4, th, .brand-title {
 
 .modal-logo-img {
   height: 36px;
+  width: auto;
+  mix-blend-mode: multiply;
 }
 
 .btn-close {
@@ -870,7 +879,7 @@ h1, h2, h3, h4, th, .brand-title {
     padding-bottom: 0.5rem;
     border-bottom: 2px solid #000;
   }
-  .print-logo { height: 50px; }
+  .print-logo { height: 50px; mix-blend-mode: multiply; }
   .cake-table th, .cake-table td { border: 1px solid #000 !important; }
 }
 
