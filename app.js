@@ -47,7 +47,7 @@ const INITIAL_SAMPLE_ORDERS = [
     partialAmount: '',
     signedBy: 'User 2',
     signedAt: '2026-07-25 11:30 AM',
-    leftStore: true, // Handed out sample
+    leftStore: true,
     handedOutBy: 'User 2',
     handedOutAt: '2026-07-25 11:45 AM',
     rescheduledTo: '',
@@ -136,15 +136,49 @@ class CandyBunchApp {
   }
 
   loadOrders() {
-    const saved = localStorage.getItem('candy_bunch_v6_orders');
-    if (saved) {
+    let savedOrders = null;
+    // Check multiple storage keys for migration safety
+    const savedV6 = localStorage.getItem('candy_bunch_v6_orders');
+    const savedV5 = localStorage.getItem('candy_bunch_v5_orders');
+    const savedLegacy = localStorage.getItem('candy_bunch_orders');
+
+    const rawData = savedV6 || savedV5 || savedLegacy;
+
+    if (rawData) {
       try {
-        return JSON.parse(saved);
+        savedOrders = JSON.parse(rawData);
       } catch (e) {
-        console.error('Error parsing orders:', e);
+        console.error('Error parsing stored orders:', e);
       }
     }
-    return [...INITIAL_SAMPLE_ORDERS];
+
+    if (!Array.isArray(savedOrders) || savedOrders.length === 0) {
+      return [...INITIAL_SAMPLE_ORDERS];
+    }
+
+    // Ensure all stored orders have default values for null-safety
+    return savedOrders.map(o => ({
+      id: o.id || `${o.date || '2026-07-25'}_${o.cakeNo || '0'}_${Math.random()}`,
+      cakeNo: o.cakeNo || '',
+      date: o.date || '2026-07-25',
+      customerName: o.customerName || '',
+      pickup: o.pickup || 'NO',
+      time: o.time || '10:00',
+      price: o.price || '',
+      destination: o.destination || '',
+      deliveryFee: o.deliveryFee || '',
+      topper: o.topper || 'NO',
+      instructions: o.instructions || '',
+      paymentStatus: o.paymentStatus || 'Not Decided',
+      partialAmount: o.partialAmount || '',
+      signedBy: o.signedBy || 'User 1',
+      signedAt: o.signedAt || '',
+      leftStore: !!o.leftStore,
+      handedOutBy: o.handedOutBy || '',
+      handedOutAt: o.handedOutAt || '',
+      rescheduledTo: o.rescheduledTo || '',
+      rescheduledFrom: o.rescheduledFrom || ''
+    }));
   }
 
   saveOrders() {
@@ -153,18 +187,15 @@ class CandyBunchApp {
   }
 
   initElements() {
-    // Navigation Tabs
     this.tabSheetBtn = document.getElementById('tabSheetBtn');
     this.tabArchivesBtn = document.getElementById('tabArchivesBtn');
     this.pageDailySheet = document.getElementById('pageDailySheet');
     this.pageArchives = document.getElementById('pageArchives');
 
-    // Header Actions
     this.addOrderBtn = document.getElementById('addOrderBtn');
     this.printBtn = document.getElementById('printBtn');
     this.resetSampleDataBtn = document.getElementById('resetSampleDataBtn');
 
-    // Date Switcher Controls
     this.activeDateTitle = document.getElementById('activeDateTitle');
     this.tableDateSubtitle = document.getElementById('tableDateSubtitle');
     this.selectedDateInput = document.getElementById('selectedDateInput');
@@ -172,7 +203,6 @@ class CandyBunchApp {
     this.nextDayBtn = document.getElementById('nextDayBtn');
     this.todayBtn = document.getElementById('todayBtn');
 
-    // Main Order Modal & Form
     this.modal = document.getElementById('orderModal');
     this.orderForm = document.getElementById('orderForm');
     this.modalHeading = document.getElementById('modalHeading');
@@ -180,7 +210,6 @@ class CandyBunchApp {
     this.closeModalBtn = document.getElementById('closeModalBtn');
     this.cancelModalBtn = document.getElementById('cancelModalBtn');
 
-    // Form Inputs
     this.inputCakeNo = document.getElementById('inputCakeNo');
     this.inputDate = document.getElementById('inputDate');
     this.inputCustomerName = document.getElementById('inputCustomerName');
@@ -192,7 +221,6 @@ class CandyBunchApp {
     this.partialAmountGroup = document.getElementById('partialAmountGroup');
     this.inputPartialAmount = document.getElementById('inputPartialAmount');
 
-    // Auth Password Modal
     this.authModal = document.getElementById('authModal');
     this.authForm = document.getElementById('authForm');
     this.authPasswordInput = document.getElementById('authPassword');
@@ -202,7 +230,6 @@ class CandyBunchApp {
     this.closeAuthModalBtn = document.getElementById('closeAuthModalBtn');
     this.cancelAuthModalBtn = document.getElementById('cancelAuthModalBtn');
 
-    // Handout Modal ("Order Left Store")
     this.handoutModal = document.getElementById('handoutModal');
     this.handoutForm = document.getElementById('handoutForm');
     this.handoutPasswordInput = document.getElementById('handoutPassword');
@@ -210,7 +237,6 @@ class CandyBunchApp {
     this.closeHandoutModalBtn = document.getElementById('closeHandoutModalBtn');
     this.cancelHandoutModalBtn = document.getElementById('cancelHandoutModalBtn');
 
-    // Reschedule Modal
     this.rescheduleModal = document.getElementById('rescheduleModal');
     this.rescheduleForm = document.getElementById('rescheduleForm');
     this.rescheduleCurrentDateDisplay = document.getElementById('rescheduleCurrentDateDisplay');
@@ -219,12 +245,10 @@ class CandyBunchApp {
     this.closeRescheduleModalBtn = document.getElementById('closeRescheduleModalBtn');
     this.cancelRescheduleModalBtn = document.getElementById('cancelRescheduleModalBtn');
 
-    // Filters & Search
     this.searchInput = document.getElementById('searchInput');
     this.filterPayment = document.getElementById('filterPayment');
     this.filterPickup = document.getElementById('filterPickup');
 
-    // Table & Stats Tracker
     this.tableBody = document.getElementById('tableBody');
     this.emptyState = document.getElementById('emptyState');
     this.statTotalOrders = document.getElementById('statTotalOrders');
@@ -236,7 +260,6 @@ class CandyBunchApp {
     this.statTotalDeliveryFees = document.getElementById('statTotalDeliveryFees');
     this.printSheetDate = document.getElementById('printSheetDate');
 
-    // Archives Page Elements
     this.archivesGrid = document.getElementById('archivesGrid');
     this.archiveJumpDate = document.getElementById('archiveJumpDate');
   }
@@ -267,34 +290,28 @@ class CandyBunchApp {
       }
     });
 
-    // Main Order Modal
     this.addOrderBtn.addEventListener('click', () => this.openOrderModal());
     this.closeModalBtn.addEventListener('click', () => this.closeOrderModal());
     this.cancelModalBtn.addEventListener('click', () => this.closeOrderModal());
     this.orderForm.addEventListener('submit', (e) => this.handleOrderFormSubmit(e));
 
-    // Payment Auth Modal
     this.closeAuthModalBtn.addEventListener('click', () => this.closeAuthModal());
     this.cancelAuthModalBtn.addEventListener('click', () => this.closeAuthModal());
     this.authForm.addEventListener('submit', (e) => this.handleAuthSubmit(e));
 
-    // Handout Modal ("Order Left Store")
     this.closeHandoutModalBtn.addEventListener('click', () => this.closeHandoutModal());
     this.cancelHandoutModalBtn.addEventListener('click', () => this.closeHandoutModal());
     this.handoutForm.addEventListener('submit', (e) => this.handleHandoutSubmit(e));
 
-    // Reschedule Modal
     this.closeRescheduleModalBtn.addEventListener('click', () => this.closeRescheduleModal());
     this.cancelRescheduleModalBtn.addEventListener('click', () => this.closeRescheduleModal());
     this.rescheduleForm.addEventListener('submit', (e) => this.handleRescheduleSubmit(e));
 
-    // Print
     this.printBtn.addEventListener('click', () => {
       this.printSheetDate.textContent = `Date: ${this.formatFullDate(this.selectedDate)}`;
       window.print();
     });
 
-    // Reset Sample Data
     this.resetSampleDataBtn.addEventListener('click', () => {
       if (confirm('Reload default sample cake orders?')) {
         this.orders = [...INITIAL_SAMPLE_ORDERS];
@@ -302,7 +319,6 @@ class CandyBunchApp {
       }
     });
 
-    // Filters
     this.searchInput.addEventListener('input', () => this.render());
     this.filterPayment.addEventListener('change', () => this.render());
     this.filterPickup.addEventListener('change', () => this.render());
@@ -346,14 +362,14 @@ class CandyBunchApp {
     if (orderToEdit) {
       this.modalHeading.textContent = `Edit Cake Order #${orderToEdit.cakeNo}`;
       this.editOrderIdInput.value = orderToEdit.id;
-      this.inputCakeNo.value = orderToEdit.cakeNo;
-      this.inputDate.value = orderToEdit.date;
-      this.inputCustomerName.value = orderToEdit.customerName;
+      this.inputCakeNo.value = orderToEdit.cakeNo || '';
+      this.inputDate.value = orderToEdit.date || this.selectedDate;
+      this.inputCustomerName.value = orderToEdit.customerName || '';
       this.inputPrice.value = orderToEdit.price || '';
-      this.inputTime.value = orderToEdit.time;
+      this.inputTime.value = orderToEdit.time || '10:00';
       this.inputDestination.value = orderToEdit.destination || '';
       this.inputDeliveryFee.value = orderToEdit.deliveryFee || '';
-      this.inputInstructions.value = orderToEdit.instructions;
+      this.inputInstructions.value = orderToEdit.instructions || '';
       this.inputPartialAmount.value = orderToEdit.partialAmount || '';
 
       const pickupRadio = this.orderForm.querySelector(`input[name="inputPickup"][value="${orderToEdit.pickup}"]`);
@@ -417,13 +433,13 @@ class CandyBunchApp {
       instructions: this.inputInstructions.value.trim(),
       paymentStatus: paymentVal,
       partialAmount: paymentVal === 'Partial Paid' ? this.inputPartialAmount.value.trim() : '',
-      signedBy: existingOrder ? existingOrder.signedBy : 'User 1',
-      signedAt: existingOrder ? existingOrder.signedAt : this.getFormattedTimestamp(),
-      leftStore: existingOrder ? existingOrder.leftStore : false,
-      handedOutBy: existingOrder ? existingOrder.handedOutBy : '',
-      handedOutAt: existingOrder ? existingOrder.handedOutAt : '',
-      rescheduledTo: existingOrder ? existingOrder.rescheduledTo : '',
-      rescheduledFrom: existingOrder ? existingOrder.rescheduledFrom : ''
+      signedBy: existingOrder ? (existingOrder.signedBy || 'User 1') : 'User 1',
+      signedAt: existingOrder ? (existingOrder.signedAt || this.getFormattedTimestamp()) : this.getFormattedTimestamp(),
+      leftStore: existingOrder ? !!existingOrder.leftStore : false,
+      handedOutBy: existingOrder ? (existingOrder.handedOutBy || '') : '',
+      handedOutAt: existingOrder ? (existingOrder.handedOutAt || '') : '',
+      rescheduledTo: existingOrder ? (existingOrder.rescheduledTo || '') : '',
+      rescheduledFrom: existingOrder ? (existingOrder.rescheduledFrom || '') : ''
     };
 
     if (editId) {
@@ -440,7 +456,6 @@ class CandyBunchApp {
     this.closeOrderModal();
   }
 
-  // --- PAYMENT AUTH MODAL ---
   openAuthModal(orderId, suggestedNextStatus = null, prefilledPartialAmount = '') {
     this.pendingAuthOrderId = orderId;
     this.authForm.reset();
@@ -504,13 +519,11 @@ class CandyBunchApp {
     this.closeAuthModal();
   }
 
-  // --- HANDOUT MODAL ("ORDER LEFT STORE") ---
   toggleLeftStoreStatus(orderId) {
     const order = this.orders.find(o => o.id === orderId);
     if (!order) return;
 
     if (order.leftStore) {
-      // Uncheck / Undo Handout
       if (confirm('Undo order departure status?')) {
         order.leftStore = false;
         order.handedOutBy = '';
@@ -520,7 +533,6 @@ class CandyBunchApp {
         this.render();
       }
     } else {
-      // Require Handout User Signature & PIN
       this.openHandoutModal(orderId);
     }
   }
@@ -563,7 +575,6 @@ class CandyBunchApp {
     this.closeHandoutModal();
   }
 
-  // --- RESCHEDULE MODAL & PORTAL SYSTEM ---
   openRescheduleModal(orderId) {
     const order = this.orders.find(o => o.id === orderId);
     if (!order) return;
@@ -598,17 +609,15 @@ class CandyBunchApp {
       return;
     }
 
-    // Mark original order as rescheduled to newDate
     originalOrder.rescheduledTo = newDate;
 
-    // Create a new order entry on the target rescheduled date
     const newRescheduledOrder = {
       ...originalOrder,
       id: `${newDate}_${originalOrder.cakeNo}_rescheduled_${Date.now()}`,
       date: newDate,
       rescheduledFrom: originalDate,
       rescheduledTo: '',
-      instructions: reason ? `${originalOrder.instructions ? originalOrder.instructions + ' | ' : ''}Rescheduled: ${reason}` : originalOrder.instructions,
+      instructions: reason ? `${originalOrder.instructions ? originalOrder.instructions + ' | ' : ''}Rescheduled: ${reason}` : (originalOrder.instructions || ''),
       leftStore: false,
       handedOutBy: '',
       handedOutAt: ''
@@ -650,7 +659,8 @@ class CandyBunchApp {
 
   formatTime12Hr(time24) {
     if (!time24) return '';
-    const [hours, minutes] = time24.split(':');
+    const [hours, minutes] = (time24 || '').split(':');
+    if (!hours || !minutes) return time24 || '';
     let h = parseInt(hours, 10);
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12;
@@ -659,21 +669,29 @@ class CandyBunchApp {
   }
 
   getOrdersForActiveDate() {
-    const search = this.searchInput.value.toLowerCase().trim();
+    const search = (this.searchInput.value || '').toLowerCase().trim();
     const paymentFilter = this.filterPayment.value;
     const pickupFilter = this.filterPickup.value;
 
     return this.orders.filter(order => {
       if (order.date !== this.selectedDate) return false;
 
+      const cakeNoStr = (order.cakeNo || '').toString().toLowerCase();
+      const customerStr = (order.customerName || '').toLowerCase();
+      const priceStr = (order.price || '').toString().toLowerCase();
+      const feeStr = (order.deliveryFee || '').toString().toLowerCase();
+      const partialStr = (order.partialAmount || '').toString().toLowerCase();
+      const destStr = (order.destination || '').toLowerCase();
+      const instrStr = (order.instructions || '').toLowerCase();
+
       const matchSearch = !search ||
-        order.cakeNo.toLowerCase().includes(search) ||
-        order.customerName.toLowerCase().includes(search) ||
-        (order.price && order.price.toLowerCase().includes(search)) ||
-        (order.deliveryFee && order.deliveryFee.toLowerCase().includes(search)) ||
-        (order.partialAmount && order.partialAmount.toLowerCase().includes(search)) ||
-        order.destination.toLowerCase().includes(search) ||
-        order.instructions.toLowerCase().includes(search);
+        cakeNoStr.includes(search) ||
+        customerStr.includes(search) ||
+        priceStr.includes(search) ||
+        feeStr.includes(search) ||
+        partialStr.includes(search) ||
+        destStr.includes(search) ||
+        instrStr.includes(search);
 
       const matchPayment = paymentFilter === 'ALL' || order.paymentStatus === paymentFilter;
       const matchPickup = pickupFilter === 'ALL' || order.pickup === pickupFilter;
@@ -685,8 +703,6 @@ class CandyBunchApp {
   updateStats() {
     const dateOrders = this.orders.filter(o => o.date === this.selectedDate);
     const total = dateOrders.length;
-
-    // Remaining orders tracker: count where leftStore is false and not rescheduled out
     const remainingCount = dateOrders.filter(o => !o.leftStore && !o.rescheduledTo).length;
 
     const whish = dateOrders.filter(o => o.paymentStatus === 'Paid Whish').length;
@@ -772,145 +788,144 @@ class CandyBunchApp {
   }
 
   render() {
-    this.activeDateTitle.textContent = this.formatFullDate(this.selectedDate);
-    this.tableDateSubtitle.textContent = this.formatFullDate(this.selectedDate);
+    try {
+      this.activeDateTitle.textContent = this.formatFullDate(this.selectedDate);
+      this.tableDateSubtitle.textContent = this.formatFullDate(this.selectedDate);
 
-    this.updateStats();
-    const activeDateOrders = this.getOrdersForActiveDate();
+      this.updateStats();
+      const activeDateOrders = this.getOrdersForActiveDate();
 
-    this.tableBody.innerHTML = '';
+      this.tableBody.innerHTML = '';
 
-    if (activeDateOrders.length === 0) {
-      this.emptyState.classList.remove('hidden');
-    } else {
-      this.emptyState.classList.add('hidden');
+      if (activeDateOrders.length === 0) {
+        this.emptyState.classList.remove('hidden');
+      } else {
+        this.emptyState.classList.add('hidden');
 
-      activeDateOrders.forEach(order => {
-        const tr = document.createElement('tr');
+        activeDateOrders.forEach(order => {
+          const tr = document.createElement('tr');
 
-        if (order.leftStore) {
-          tr.className = 'row-left-store';
-        }
+          if (order.leftStore) {
+            tr.className = 'row-left-store';
+          }
 
-        let paymentClass = 'blank';
-        let paymentIcon = 'ri-subtract-line';
-        let paymentLabel = 'Not Decided';
+          let paymentClass = 'blank';
+          let paymentIcon = 'ri-subtract-line';
+          let paymentLabel = 'Not Decided';
 
-        if (order.paymentStatus === 'Paid Whish') {
-          paymentClass = 'whish';
-          paymentIcon = 'ri-smartphone-line';
-          paymentLabel = 'Paid Whish';
-        } else if (order.paymentStatus === 'Paid Cash') {
-          paymentClass = 'cash';
-          paymentIcon = 'ri-money-dollar-circle-line';
-          paymentLabel = 'Paid Cash';
-        } else if (order.paymentStatus === 'Partial Paid') {
-          paymentClass = 'partial';
-          paymentIcon = 'ri-pie-chart-line';
-          const amtStr = order.partialAmount ? ` ($${order.partialAmount})` : '';
-          paymentLabel = `Partial Paid${amtStr}`;
-        } else if (order.paymentStatus === 'Not Paid') {
-          paymentClass = 'unpaid';
-          paymentIcon = 'ri-time-line';
-          paymentLabel = 'Not Paid';
-        }
+          if (order.paymentStatus === 'Paid Whish') {
+            paymentClass = 'whish';
+            paymentIcon = 'ri-smartphone-line';
+            paymentLabel = 'Paid Whish';
+          } else if (order.paymentStatus === 'Paid Cash') {
+            paymentClass = 'cash';
+            paymentIcon = 'ri-money-dollar-circle-line';
+            paymentLabel = 'Paid Cash';
+          } else if (order.paymentStatus === 'Partial Paid') {
+            paymentClass = 'partial';
+            paymentIcon = 'ri-pie-chart-line';
+            const amtStr = order.partialAmount ? ` ($${order.partialAmount})` : '';
+            paymentLabel = `Partial Paid${amtStr}`;
+          } else if (order.paymentStatus === 'Not Paid') {
+            paymentClass = 'unpaid';
+            paymentIcon = 'ri-time-line';
+            paymentLabel = 'Not Paid';
+          }
 
-        const priceDisplay = order.price ? `$${order.price}` : '<span style="color:#aaa;">—</span>';
+          const priceDisplay = order.price ? `$${order.price}` : '<span style="color:#aaa;">—</span>';
 
-        let destinationDisplay = '<span style="color:#aaa;">—</span>';
-        if (order.pickup === 'YES') {
-          destinationDisplay = order.destination ? `${order.destination} <span class="badge-no">Store Pickup</span>` : '<span class="badge-no">Store Pickup</span>';
-        } else {
-          const feeBadge = order.deliveryFee ? `<span class="delivery-fee-badge"><i class="ri-truck-line"></i> +$${order.deliveryFee} Fee</span>` : '';
-          destinationDisplay = `${order.destination || 'Delivery'} ${feeBadge}`;
-        }
+          let destinationDisplay = '<span style="color:#aaa;">—</span>';
+          if (order.pickup === 'YES') {
+            destinationDisplay = order.destination ? `${order.destination} <span class="badge-no">Store Pickup</span>` : '<span class="badge-no">Store Pickup</span>';
+          } else {
+            const feeBadge = order.deliveryFee ? `<span class="delivery-fee-badge"><i class="ri-truck-line"></i> +$${order.deliveryFee} Fee</span>` : '';
+            destinationDisplay = `${order.destination || 'Delivery'} ${feeBadge}`;
+          }
 
-        // Reschedule Portal Badges
-        let portalBadgeHtml = '';
-        if (order.rescheduledTo) {
-          portalBadgeHtml = `<br><span class="portal-badge to" data-target="${order.rescheduledTo}" title="Click to view destination date sheet"><i class="ri-arrow-right-line"></i> Rescheduled to ${order.rescheduledTo}</span>`;
-        } else if (order.rescheduledFrom) {
-          portalBadgeHtml = `<br><span class="portal-badge from" data-target="${order.rescheduledFrom}" title="Click to view original date sheet"><i class="ri-arrow-left-line"></i> Rescheduled from ${order.rescheduledFrom}</span>`;
-        }
+          let portalBadgeHtml = '';
+          if (order.rescheduledTo) {
+            portalBadgeHtml = `<br><span class="portal-badge to" data-target="${order.rescheduledTo}" title="Click to view destination date sheet"><i class="ri-arrow-right-line"></i> Rescheduled to ${order.rescheduledTo}</span>`;
+          } else if (order.rescheduledFrom) {
+            portalBadgeHtml = `<br><span class="portal-badge from" data-target="${order.rescheduledFrom}" title="Click to view original date sheet"><i class="ri-arrow-left-line"></i> Rescheduled from ${order.rescheduledFrom}</span>`;
+          }
 
-        // Handout Signature cell
-        let handoutCellHtml = `
-          <div class="left-store-box">
-            <input type="checkbox" class="left-store-checkbox" ${order.leftStore ? 'checked' : ''} title="Check when order leaves store">
-            ${order.leftStore ? `<span class="handout-signature-tag">by ${order.handedOutBy || 'Staff'} ${order.handedOutAt ? '@ ' + order.handedOutAt : ''}</span>` : ''}
-          </div>
-        `;
-
-        tr.innerHTML = `
-          <td><span class="cake-number">${order.cakeNo}</span></td>
-          <td>${this.formatFullDate(order.date).split(',')[0]}, ${order.date}</td>
-          <td><strong>${order.customerName}</strong> ${portalBadgeHtml}</td>
-          <td style="text-align: center;">
-            ${order.pickup === 'YES' ? '<span class="badge-yes">Yes</span>' : '<span class="badge-no">No</span>'}
-          </td>
-          <td><strong>${this.formatTime12Hr(order.time)}</strong></td>
-          <td><span class="price-text">${priceDisplay}</span></td>
-          <td>${destinationDisplay}</td>
-          <td style="text-align: center;">
-            ${order.topper === 'YES' ? '<span class="badge-yes">Yes</span>' : '<span class="badge-no">No</span>'}
-          </td>
-          <td>${order.instructions ? order.instructions : '<span style="color:#aaa;">—</span>'}</td>
-          <td style="text-align: center;">
-            <span class="payment-badge ${paymentClass}" title="Click to change payment status (Password Protected)">
-              <i class="${paymentIcon}"></i> ${paymentLabel}
-            </span>
-          </td>
-          <td>
-            <span class="signed-user"><i class="ri-shield-check-fill" style="color:#10B981;"></i> ${order.signedBy || 'User 1'}</span>
-            <span class="signed-time">${order.signedAt || '—'}</span>
-          </td>
-          <td style="text-align: center;">
-            ${handoutCellHtml}
-          </td>
-          <td style="text-align: center;" class="no-print">
-            <div class="action-btns">
-              <button class="btn-table-action reschedule" title="Reschedule Order">
-                <i class="ri-history-line"></i>
-              </button>
-              <button class="btn-table-action edit" title="Edit Order">
-                <i class="ri-edit-line"></i>
-              </button>
-              <button class="btn-table-action delete" title="Delete Order">
-                <i class="ri-delete-bin-line"></i>
-              </button>
+          let handoutCellHtml = `
+            <div class="left-store-box">
+              <input type="checkbox" class="left-store-checkbox" ${order.leftStore ? 'checked' : ''} title="Check when order leaves store">
+              ${order.leftStore ? `<span class="handout-signature-tag">by ${order.handedOutBy || 'Staff'} ${order.handedOutAt ? '@ ' + order.handedOutAt : ''}</span>` : ''}
             </div>
-          </td>
-        `;
+          `;
 
-        // Bind portal badge click events
-        const portalBtn = tr.querySelector('.portal-badge');
-        if (portalBtn) {
-          portalBtn.addEventListener('click', () => {
-            const targetDate = portalBtn.getAttribute('data-target');
-            if (targetDate) {
-              this.selectedDate = targetDate;
-              this.selectedDateInput.value = targetDate;
-              this.render();
-            }
-          });
-        }
+          tr.innerHTML = `
+            <td><span class="cake-number">${order.cakeNo || '0'}</span></td>
+            <td>${this.formatFullDate(order.date).split(',')[0]}, ${order.date}</td>
+            <td><strong>${order.customerName || 'Customer'}</strong> ${portalBadgeHtml}</td>
+            <td style="text-align: center;">
+              ${order.pickup === 'YES' ? '<span class="badge-yes">Yes</span>' : '<span class="badge-no">No</span>'}
+            </td>
+            <td><strong>${this.formatTime12Hr(order.time)}</strong></td>
+            <td><span class="price-text">${priceDisplay}</span></td>
+            <td>${destinationDisplay}</td>
+            <td style="text-align: center;">
+              ${order.topper === 'YES' ? '<span class="badge-yes">Yes</span>' : '<span class="badge-no">No</span>'}
+            </td>
+            <td>${order.instructions ? order.instructions : '<span style="color:#aaa;">—</span>'}</td>
+            <td style="text-align: center;">
+              <span class="payment-badge ${paymentClass}" title="Click to change payment status (Password Protected)">
+                <i class="${paymentIcon}"></i> ${paymentLabel}
+              </span>
+            </td>
+            <td>
+              <span class="signed-user"><i class="ri-shield-check-fill" style="color:#10B981;"></i> ${order.signedBy || 'User 1'}</span>
+              <span class="signed-time">${order.signedAt || '—'}</span>
+            </td>
+            <td style="text-align: center;">
+              ${handoutCellHtml}
+            </td>
+            <td style="text-align: center;" class="no-print">
+              <div class="action-btns">
+                <button class="btn-table-action reschedule" title="Reschedule Order">
+                  <i class="ri-history-line"></i>
+                </button>
+                <button class="btn-table-action edit" title="Edit Order">
+                  <i class="ri-edit-line"></i>
+                </button>
+                <button class="btn-table-action delete" title="Delete Order">
+                  <i class="ri-delete-bin-line"></i>
+                </button>
+              </div>
+            </td>
+          `;
 
-        // Left store checkbox event
-        const leftStoreChk = tr.querySelector('.left-store-checkbox');
-        leftStoreChk.addEventListener('change', () => this.toggleLeftStoreStatus(order.id));
+          const portalBtn = tr.querySelector('.portal-badge');
+          if (portalBtn) {
+            portalBtn.addEventListener('click', () => {
+              const targetDate = portalBtn.getAttribute('data-target');
+              if (targetDate) {
+                this.selectedDate = targetDate;
+                this.selectedDateInput.value = targetDate;
+                this.render();
+              }
+            });
+          }
 
-        // Action Buttons
-        tr.querySelector('.payment-badge').addEventListener('click', () => this.openAuthModal(order.id));
-        tr.querySelector('.btn-table-action.reschedule').addEventListener('click', () => this.openRescheduleModal(order.id));
-        tr.querySelector('.btn-table-action.edit').addEventListener('click', () => this.openOrderModal(order));
-        tr.querySelector('.btn-table-action.delete').addEventListener('click', () => this.deleteOrder(order.id));
+          const leftStoreChk = tr.querySelector('.left-store-checkbox');
+          leftStoreChk.addEventListener('change', () => this.toggleLeftStoreStatus(order.id));
 
-        this.tableBody.appendChild(tr);
-      });
-    }
+          tr.querySelector('.payment-badge').addEventListener('click', () => this.openAuthModal(order.id));
+          tr.querySelector('.btn-table-action.reschedule').addEventListener('click', () => this.openRescheduleModal(order.id));
+          tr.querySelector('.btn-table-action.edit').addEventListener('click', () => this.openOrderModal(order));
+          tr.querySelector('.btn-table-action.delete').addEventListener('click', () => this.deleteOrder(order.id));
 
-    if (this.currentTab === 'archives') {
-      this.renderArchives();
+          this.tableBody.appendChild(tr);
+        });
+      }
+
+      if (this.currentTab === 'archives') {
+        this.renderArchives();
+      }
+    } catch (err) {
+      console.error('Error rendering dashboard orders:', err);
     }
   }
 }
