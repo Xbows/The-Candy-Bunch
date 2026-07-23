@@ -1,5 +1,5 @@
 // ==========================================================================
-// The Candy Bunch - Daily Sheet with Manual Delivery Fee & Destination
+// The Candy Bunch - Daily Sheet with Total Delivery Fees Calculation
 // ==========================================================================
 
 const USERS = {
@@ -18,7 +18,7 @@ const INITIAL_SAMPLE_ORDERS = [
     time: '15:00',
     price: '45.00',
     destination: 'sahel alma',
-    deliveryFee: '5.00', // Delivery Fee
+    deliveryFee: '5.00',
     topper: 'NO',
     instructions: '2 dz (éclair and tart)',
     paymentStatus: 'Not Decided',
@@ -188,6 +188,7 @@ class CandyBunchApp {
     this.statPaidCash = document.getElementById('statPaidCash');
     this.statPartialPaid = document.getElementById('statPartialPaid');
     this.statNotPaid = document.getElementById('statNotPaid');
+    this.statTotalDeliveryFees = document.getElementById('statTotalDeliveryFees');
     this.printSheetDate = document.getElementById('printSheetDate');
 
     // Archives Page Elements
@@ -526,11 +527,21 @@ class CandyBunchApp {
     const partial = dateOrders.filter(o => o.paymentStatus === 'Partial Paid').length;
     const unpaid = dateOrders.filter(o => o.paymentStatus === 'Not Paid' || o.paymentStatus === 'Not Decided').length;
 
+    // Calculate Total Delivery Fees Sum for the active date
+    let totalDeliveryFeesSum = 0;
+    dateOrders.forEach(o => {
+      if (o.pickup === 'NO' && o.deliveryFee) {
+        const fee = parseFloat(o.deliveryFee);
+        if (!isNaN(fee)) totalDeliveryFeesSum += fee;
+      }
+    });
+
     this.statTotalOrders.textContent = total;
     this.statPaidWhish.textContent = whish;
     this.statPaidCash.textContent = cash;
     this.statPartialPaid.textContent = partial;
     this.statNotPaid.textContent = unpaid;
+    this.statTotalDeliveryFees.textContent = `$${totalDeliveryFeesSum.toFixed(2)}`;
   }
 
   renderArchives() {
@@ -538,13 +549,18 @@ class CandyBunchApp {
 
     this.orders.forEach(order => {
       if (!dateMap[order.date]) {
-        dateMap[order.date] = { date: order.date, total: 0, whish: 0, cash: 0, partial: 0, unpaid: 0 };
+        dateMap[order.date] = { date: order.date, total: 0, whish: 0, cash: 0, partial: 0, unpaid: 0, deliveryFees: 0 };
       }
       dateMap[order.date].total++;
       if (order.paymentStatus === 'Paid Whish') dateMap[order.date].whish++;
       else if (order.paymentStatus === 'Paid Cash') dateMap[order.date].cash++;
       else if (order.paymentStatus === 'Partial Paid') dateMap[order.date].partial++;
       else dateMap[order.date].unpaid++;
+
+      if (order.pickup === 'NO' && order.deliveryFee) {
+        const fee = parseFloat(order.deliveryFee);
+        if (!isNaN(fee)) dateMap[order.date].deliveryFees += fee;
+      }
     });
 
     const sortedDates = Object.values(dateMap).sort((a, b) => b.date.localeCompare(a.date));
@@ -564,6 +580,7 @@ class CandyBunchApp {
           <h3 class="archive-date-title">${this.formatFullDate(day.date)}</h3>
           <div class="archive-stats-summary">
             <span class="archive-stat-tag"><strong>${day.total}</strong> Orders</span>
+            <span class="archive-stat-tag" style="color: #2563EB;">Delivery Fees: <strong>$${day.deliveryFees.toFixed(2)}</strong></span>
             <span class="archive-stat-tag" style="color: #6B21A8;">Whish: ${day.whish}</span>
             <span class="archive-stat-tag" style="color: #137333;">Cash: ${day.cash}</span>
             <span class="archive-stat-tag" style="color: #92400E;">Partial: ${day.partial}</span>
@@ -629,7 +646,6 @@ class CandyBunchApp {
 
         const priceDisplay = order.price ? `$${order.price}` : '<span style="color:#aaa;">—</span>';
 
-        // Format Destination & Delivery Fee cell
         let destinationDisplay = '<span style="color:#aaa;">—</span>';
         if (order.pickup === 'YES') {
           destinationDisplay = order.destination ? `${order.destination} <span class="badge-no">Store Pickup</span>` : '<span class="badge-no">Store Pickup</span>';

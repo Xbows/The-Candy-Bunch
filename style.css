@@ -1,5 +1,5 @@
 /* ==========================================================================
-   The Candy Bunch - Final Styling with Delivery Fee & Destination Integration
+   The Candy Bunch - Styling with Total Delivery Fees Metric Summary Card
    ========================================================================== */
 
 :root {
@@ -312,29 +312,30 @@ h1, h2, h3, h4, th, .brand-title {
 /* Stats Cards Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 1rem;
 }
 
 .stat-card {
   background: var(--bg-card);
-  padding: 1.1rem 1.25rem;
+  padding: 1.1rem 1.2rem;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 .stat-icon {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.35rem;
+  flex-shrink: 0;
 }
 
 .bg-pink-light { background: #FCE4EC; }
@@ -347,16 +348,23 @@ h1, h2, h3, h4, th, .brand-title {
 .color-orange { color: #D97706; }
 .bg-amber-light { background: #FFFBEB; }
 .color-amber { color: #F59E0B; }
+.bg-blue-light { background: #EFF6FF; }
+.color-blue { color: #2563EB; }
+
+.stat-highlight-delivery {
+  border: 1.5px solid #BFDBFE;
+  background: #F8FAFC;
+}
 
 .stat-label {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .stat-value {
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #0F172A;
 }

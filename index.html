@@ -115,6 +115,17 @@
               <h3 id="statNotPaid" class="stat-value">0</h3>
             </div>
           </div>
+
+          <!-- NEW CARD: Total Delivery Fees Sum -->
+          <div class="stat-card stat-highlight-delivery">
+            <div class="stat-icon bg-blue-light">
+              <i class="ri-truck-fill color-blue"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Delivery Fees</span>
+              <h3 id="statTotalDeliveryFees" class="stat-value">$0.00</h3>
+            </div>
+          </div>
         </section>
 
         <!-- Search & Filter Bar -->
@@ -276,7 +287,6 @@
             </div>
           </div>
 
-          <!-- Delivery Options Section (Destination & Manual Delivery Fee) -->
           <div id="deliveryFieldsGroup" class="form-row grid-2">
             <div class="form-group">
               <label for="inputDestination"><i class="ri-map-pin-2-line"></i> 6. Delivery Destination</label>
@@ -334,7 +344,6 @@
             </div>
           </div>
 
-          <!-- Partial Paid Amount Input -->
           <div id="partialAmountGroup" class="form-group partial-amount-box hidden">
             <label for="inputPartialAmount"><i class="ri-money-dollar-box-line"></i> Partial Amount Paid So Far ($)</label>
             <input type="text" id="inputPartialAmount" placeholder="e.g. 25.00" class="form-control">
