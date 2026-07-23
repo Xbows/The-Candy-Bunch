@@ -1,5 +1,5 @@
 // ==========================================================================
-// The Candy Bunch - Clean Paper Log Sheet Integration (Fresh Data Reset)
+// The Candy Bunch - Clean Paper Log Sheet Integration (Fixed Null Reference)
 // ==========================================================================
 
 const USERS = {
@@ -137,32 +137,31 @@ class CandyBunchApp {
   }
 
   loadOrders() {
-    // Force reset to clean paper sheet data for v7
-    const savedV7 = localStorage.getItem('candy_bunch_v7_orders');
+    // Purge old local storage versions
+    localStorage.removeItem('candy_bunch_orders');
+    localStorage.removeItem('candy_bunch_v5_orders');
+    localStorage.removeItem('candy_bunch_v6_orders');
+    localStorage.removeItem('candy_bunch_v7_orders');
 
-    if (savedV7) {
+    const savedV8 = localStorage.getItem('candy_bunch_v8_orders');
+
+    if (savedV8) {
       try {
-        const parsed = JSON.parse(savedV7);
-        if (Array.isArray(parsed) && parsed.length >= 0) {
+        const parsed = JSON.parse(savedV8);
+        if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed;
         }
       } catch (e) {
-        console.error('Error parsing stored v7 orders:', e);
+        console.error('Error parsing stored v8 orders:', e);
       }
     }
 
-    // Clear older cached data keys
-    localStorage.removeItem('candy_bunch_v6_orders');
-    localStorage.removeItem('candy_bunch_v5_orders');
-    localStorage.removeItem('candy_bunch_orders');
-
-    // Store clean fresh paper log sheet orders
-    localStorage.setItem('candy_bunch_v7_orders', JSON.stringify(INITIAL_PAPER_ORDERS));
+    localStorage.setItem('candy_bunch_v8_orders', JSON.stringify(INITIAL_PAPER_ORDERS));
     return [...INITIAL_PAPER_ORDERS];
   }
 
   saveOrders() {
-    localStorage.setItem('candy_bunch_v7_orders', JSON.stringify(this.orders));
+    localStorage.setItem('candy_bunch_v8_orders', JSON.stringify(this.orders));
     this.render();
   }
 
@@ -236,7 +235,6 @@ class CandyBunchApp {
     this.statPaidWhish = document.getElementById('statPaidWhish');
     this.statPaidCash = document.getElementById('statPaidCash');
     this.statPartialPaid = document.getElementById('statPartialPaid');
-    this.statNotPaid = document.getElementById('statNotPaid');
     this.statTotalDeliveryFees = document.getElementById('statTotalDeliveryFees');
     this.printSheetDate = document.getElementById('printSheetDate');
 
@@ -650,8 +648,8 @@ class CandyBunchApp {
 
   getOrdersForActiveDate() {
     const search = (this.searchInput.value || '').toLowerCase().trim();
-    const paymentFilter = this.filterPayment.value;
-    const pickupFilter = this.filterPickup.value;
+    const paymentFilter = this.filterPayment ? this.filterPayment.value : 'ALL';
+    const pickupFilter = this.filterPickup ? this.filterPickup.value : 'ALL';
 
     return this.orders.filter(order => {
       if (order.date !== this.selectedDate) return false;
@@ -688,7 +686,6 @@ class CandyBunchApp {
     const whish = dateOrders.filter(o => o.paymentStatus === 'Paid Whish').length;
     const cash = dateOrders.filter(o => o.paymentStatus === 'Paid Cash').length;
     const partial = dateOrders.filter(o => o.paymentStatus === 'Partial Paid').length;
-    const unpaid = dateOrders.filter(o => o.paymentStatus === 'Not Paid' || o.paymentStatus === 'Not Decided').length;
 
     let totalDeliveryFeesSum = 0;
     dateOrders.forEach(o => {
@@ -698,13 +695,12 @@ class CandyBunchApp {
       }
     });
 
-    this.statTotalOrders.textContent = total;
-    this.statOrdersRemaining.textContent = `${remainingCount} Left`;
-    this.statPaidWhish.textContent = whish;
-    this.statPaidCash.textContent = cash;
-    this.statPartialPaid.textContent = partial;
-    this.statNotPaid.textContent = unpaid;
-    this.statTotalDeliveryFees.textContent = `$${totalDeliveryFeesSum.toFixed(2)}`;
+    if (this.statTotalOrders) this.statTotalOrders.textContent = total;
+    if (this.statOrdersRemaining) this.statOrdersRemaining.textContent = `${remainingCount} Left`;
+    if (this.statPaidWhish) this.statPaidWhish.textContent = whish;
+    if (this.statPaidCash) this.statPaidCash.textContent = cash;
+    if (this.statPartialPaid) this.statPartialPaid.textContent = partial;
+    if (this.statTotalDeliveryFees) this.statTotalDeliveryFees.textContent = `$${totalDeliveryFeesSum.toFixed(2)}`;
   }
 
   renderArchives() {
@@ -728,6 +724,7 @@ class CandyBunchApp {
 
     const sortedDates = Object.values(dateMap).sort((a, b) => b.date.localeCompare(a.date));
 
+    if (!this.archivesGrid) return;
     this.archivesGrid.innerHTML = '';
 
     if (sortedDates.length === 0) {
@@ -769,18 +766,19 @@ class CandyBunchApp {
 
   render() {
     try {
-      this.activeDateTitle.textContent = this.formatFullDate(this.selectedDate);
-      this.tableDateSubtitle.textContent = this.formatFullDate(this.selectedDate);
+      if (this.activeDateTitle) this.activeDateTitle.textContent = this.formatFullDate(this.selectedDate);
+      if (this.tableDateSubtitle) this.tableDateSubtitle.textContent = this.formatFullDate(this.selectedDate);
 
       this.updateStats();
       const activeDateOrders = this.getOrdersForActiveDate();
 
+      if (!this.tableBody) return;
       this.tableBody.innerHTML = '';
 
       if (activeDateOrders.length === 0) {
-        this.emptyState.classList.remove('hidden');
+        if (this.emptyState) this.emptyState.classList.remove('hidden');
       } else {
-        this.emptyState.classList.add('hidden');
+        if (this.emptyState) this.emptyState.classList.add('hidden');
 
         activeDateOrders.forEach(order => {
           const tr = document.createElement('tr');
